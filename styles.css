@@ -252,7 +252,7 @@ body {
     z-index: 10;
     position: relative;
     margin-top: auto;
-    margin-bottom: 0;
+    margin-bottom: env(safe-area-inset-bottom, 0);
 }
 
 .initial-screen.slide-out {
