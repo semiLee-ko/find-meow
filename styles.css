@@ -12,19 +12,6 @@ body {
     /* min-height 대신 height로 변경하여 스크롤 제어 */
     min-width: 344px;
     min-height: 667px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    /* space-between에서 변경하여 상단부터 배치 */
-    padding: 10px 20px 0 20px;
-    padding-top: max(10px, env(safe-area-inset-top));
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-left: max(20px, env(safe-area-inset-left));
-    padding-right: max(20px, env(safe-area-inset-right));
-    overflow-x: auto;
-    /* 최소 너비보다 작을 때 스크롤 허용 */
-    overflow-y: auto;
     /* 최소 높이보다 작을 때 스크롤 허용 */
     position: relative;
 }

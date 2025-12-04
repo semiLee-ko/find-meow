@@ -4,3 +4,4 @@ node_modules/
 test_output*.txt
 .DS_Store
 Thumbs.db
+www/

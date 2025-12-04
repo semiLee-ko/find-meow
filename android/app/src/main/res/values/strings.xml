@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Find Meow</string>
+    <string name="title_activity_main">Find Meow</string>
+    <string name="package_name">com.findmeow.app</string>
+    <string name="custom_url_scheme">com.findmeow.app</string>
+</resources>
