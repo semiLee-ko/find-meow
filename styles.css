@@ -2,23 +2,6 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-}
-
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f4f1ea;
-    /* background-image removed */
-    height: 100vh;
-    /* min-height 대신 height로 변경하여 스크롤 제어 */
-    min-width: 344px;
-    min-height: 667px;
-    /* 최소 높이보다 작을 때 스크롤 허용 */
-    position: relative;
-}
-
-.logo {
-    margin-bottom: 8px;
-    z-index: 10;
     position: relative;
     flex-shrink: 0;
 }
