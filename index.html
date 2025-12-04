@@ -295,8 +295,10 @@
             const cats = catPositions[imageName].cats;
             const tvScreen = document.getElementById('tvScreen');
 
-            // 카운터 초기화 및 표시
-            updateCatCounter(0);
+            // 카운터 초기화 및 표시 (애니메이션 없이)
+            const counter = document.getElementById('catCounter');
+            counter.textContent = 0;
+            counter.classList.add('active');
 
             // 스캔 라인 생성
             const scanLine = document.createElement('div');
