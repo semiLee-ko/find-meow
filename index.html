@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Find Meow - TV 채널 고양이 찾기 게임</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- 로고 -->
+    <div class="logo"><img src="images/logo.png" alt="FindMeow Logo"></div>
+
+    <!-- TV 화면 -->
+    <div class="tv-container">
+        <div class="tv-screen" id="tvScreen">
+            <img class="tv-image" id="tvImage" src="" alt="TV Screen">
+            <div class="channel-display" id="channelDisplay">000</div>
+            <div class="cat-counter" id="catCounter">0</div>
+            <div class="tv-brand">CODA creaTV</div>
+        </div>
+    </div>
+
+    <!-- 벽 장식 영역 (추후 오브젝트 추가 예정) -->
+    <div class="wall-decoration-area"></div>
+
+    <!-- 초기 화면 (참여 인원 선택) -->
+    <div class="initial-screen" id="initialScreen">
+        <div class="input-group">
+            <label for="playerCount">참여 인원 수</label>
+            <select id="playerCount">
+                <option value="1">1명</option>
+                <option value="2">2명</option>
+                <option value="3" selected>3명</option>
+                <option value="4">4명</option>
+                <option value="5">5명</option>
+                <option value="6">6명</option>
+                <option value="7">7명</option>
+                <option value="8">8명</option>
+                <option value="9">9명</option>
+                <option value="10">10명</option>
+            </select>
+        </div>
+        <button class="btn btn-primary" onclick="startGame()">게임 시작</button>
+    </div>
+
+    <!-- 리모컨 영역 -->
+    <div class="remote-control" id="remoteControl">
+        <div class="remote-header">
+            <div class="player-info" id="playerInfo">플레이어 1 / 3</div>
+        </div>
+
+        <input type="text" class="name-input" id="playerName" placeholder="이름을 입력하세요" maxlength="20">
+
+        <div class="number-pad">
+            <button class="number-btn" id="btn1" onclick="pressNumber('1')">1</button>
+            <button class="number-btn" id="btn2" onclick="pressNumber('2')">2</button>
+            <button class="number-btn" id="btn3" onclick="pressNumber('3')">3</button>
+            <button class="number-btn" id="btn4" onclick="pressNumber('4')">4</button>
+            <button class="number-btn" id="btn5" onclick="pressNumber('5')">5</button>
+            <button class="number-btn" id="btn6" onclick="pressNumber('6')">6</button>
+            <button class="number-btn" id="btn7" onclick="pressNumber('7')">7</button>
+            <button class="number-btn" id="btn8" onclick="pressNumber('8')">8</button>
+            <button class="number-btn" id="btn9" onclick="pressNumber('9')">9</button>
+            <button class="number-btn" id="btnBackspace" onclick="backspace()">⌫</button>
+            <button class="number-btn" id="btn0" onclick="pressNumber('0')">0</button>
+            <button class="number-btn channel-change" id="btnChannel" onclick="changeChannel()">채널<br>변경</button>
+        </div>
+
+        <button class="btn-next" id="btnNext" onclick="confirmPlayer()" disabled>다음</button>
+    </div>
+
+    <!-- 결과 화면 -->
+    <div class="result-screen" id="resultScreen">
+        <h2>🏆 게임 결과</h2>
+        <div id="resultList"></div>
+        <button class="btn btn-primary" onclick="resetGame()">광고보고 다시도전</button>
+    </div>
+
+    <script>
+        // ==================== 설정 ====================
+        const MAX_CHANNEL_IMAGES = 72;
+
+        // ==================== 게임 데이터 ====================
+        const channelImages = [];
+        for (let i = 1; i <= MAX_CHANNEL_IMAGES; i++) {
+            const paddedNum = String(i).padStart(4, '0');
+            channelImages.push(`channel${paddedNum}.png`);
+        }
+
+        // 기본 플레이어 이름 (20개)
+        const DEFAULT_PLAYER_NAMES = [
+            '냥콩이', '몽글냥', '고양별', '냥뭉치', '꼬물이',
+            '말랑발바닥', '솜발이', '코코냥', '별냥이', '구름발자국',
+            '살랑이', '초코꼬리', '동글냥', '하늘발자국', '달냥이',
+            '순둥냥', '눈송이냥', '포포냥', '가을냥', '총총이'
+        ];
+
+        let totalPlayers = 3;
+        let currentPlayerIndex = 0;
+        let currentChannel = '';
+        let currentImage = '';
+        let players = [];
+        let catPositions = {};
+        let usedImages = [];
+
+        // ==================== 이름 유효성 검사 ====================
+        function validatePlayerName(name) {
+            if (!name || name.trim() === '') {
+                return { valid: false, message: '이름을 입력해주세요!' };
+            }
+
+            const trimmedName = name.trim();
+            const validCharsRegex = /^[가-힣a-zA-Z0-9]+$/;
+            if (!validCharsRegex.test(trimmedName)) {
+                return { valid: false, message: '한글, 영문, 숫자만 사용 가능합니다!' };
+            }
+
+            const koreanChars = trimmedName.match(/[가-힣]/g) || [];
+            const otherChars = trimmedName.match(/[a-zA-Z0-9]/g) || [];
+
+            if (koreanChars.length > 0) {
+                const totalLength = koreanChars.length + otherChars.length;
+                if (totalLength < 2 || totalLength > 10) {
+                    return { valid: false, message: '한글 포함 시 2~10자로 입력해주세요!' };
+                }
+            } else {
+                if (otherChars.length < 2 || otherChars.length > 20) {
+                    return { valid: false, message: '영문/숫자만 사용 시 2~20자로 입력해주세요!' };
+                }
+            }
+
+            return { valid: true, message: '' };
+        }
+
+        // ==================== 초기화 ====================
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/point/json/pointInfo.json');
+                if (response.ok) {
+                    catPositions = await response.json();
+                    console.log('고양이 위치 정보 로드 완료');
+                }
+            } catch (error) {
+                console.warn('고양이 위치 정보 로드 실패:', error);
+            }
+        });
+
+        // ==================== 게임 시작 ====================
+        function startGame() {
+            totalPlayers = parseInt(document.getElementById('playerCount').value);
+            currentPlayerIndex = 0;
+            players = [];
+            usedImages = [];
+
+            document.getElementById('initialScreen').classList.add('slide-out');
+            setTimeout(() => {
+                document.getElementById('initialScreen').classList.add('hidden');
+                document.getElementById('remoteControl').classList.add('slide-in');
+                updatePlayerInfo();
+                setDefaultPlayerName();
+            }, 500);
+        }
+
+        // ==================== 기본 플레이어 이름 설정 ====================
+        function setDefaultPlayerName() {
+            const nameInput = document.getElementById('playerName');
+            if (currentPlayerIndex < DEFAULT_PLAYER_NAMES.length) {
+                nameInput.value = DEFAULT_PLAYER_NAMES[currentPlayerIndex];
+            } else {
+                nameInput.value = `플레이어${currentPlayerIndex + 1}`;
+            }
+        }
+
+        // ==================== 플레이어 정보 업데이트 ====================
+        function updatePlayerInfo() {
+            const playerInfo = document.getElementById('playerInfo');
+            playerInfo.textContent = `플레이어 ${currentPlayerIndex + 1} / ${totalPlayers}`;
+        }
+
+        // ==================== 리모컨 기능 ====================
+        function pressNumber(num) {
+            const btn = window.event ? window.event.target : event.target;
+            btn.classList.add('pressed');
+            setTimeout(() => btn.classList.remove('pressed'), 200);
+
+            if (currentChannel.length < 3) {
+                currentChannel += num;
+                updateChannelDisplay();
+            }
+        }
+
+        function backspace() {
+            currentChannel = currentChannel.slice(0, -1);
+            updateChannelDisplay();
+        }
+
+        function updateChannelDisplay() {
+            const display = document.getElementById('channelDisplay');
+            if (currentChannel.length > 0) {
+                display.textContent = currentChannel.padStart(3, '0');
+                display.classList.add('active');
+            } else {
+                display.textContent = '000';
+                display.classList.remove('active');
+            }
+        }
+
+        // ==================== 버튼 활성화/비활성화 ====================
+        function setNumberPadEnabled(enabled) {
+            const buttons = ['btn1', 'btn2', 'btn3', 'btn4', 'btn5', 'btn6', 'btn7', 'btn8', 'btn9', 'btn0', 'btnBackspace', 'btnChannel'];
+            buttons.forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.disabled = !enabled;
+            });
+        }
+
+        function setNextButtonEnabled(enabled) {
+            document.getElementById('btnNext').disabled = !enabled;
+        }
+
+        // ==================== 다음 버튼 텍스트 업데이트 ====================
+        function updateNextButtonText() {
+            const btnNext = document.getElementById('btnNext');
+            if (currentPlayerIndex === totalPlayers - 1) {
+                btnNext.textContent = '결과 확인';
+            } else {
+                btnNext.textContent = '다음';
+            }
+        }
+
+        // ==================== 카운터 업데이트 (팡 효과 - 숫자만) ====================
+        function updateCatCounter(count) {
+            const counter = document.getElementById('catCounter');
+            counter.textContent = count;
+            counter.classList.add('active');
+
+            // 팡 효과
+            counter.classList.remove('pop');
+            void counter.offsetWidth; // 리플로우 강제
+            counter.classList.add('pop');
+        }
+
+        // ==================== 채널 변경 ====================
+        function changeChannel() {
+            const channelNum = parseInt(currentChannel);
+
+            if (!currentChannel || channelNum < 1 || channelNum > 999) {
+                alert('채널 번호는 1~999 사이로 입력해주세요!');
+                return;
+            }
+
+            const availableImages = channelImages.filter(img => !usedImages.includes(img));
+
+            if (availableImages.length === 0) {
+                alert('사용 가능한 이미지가 모두 소진되었습니다!');
+                return;
+            }
+
+            const randomIndex = Math.floor(Math.random() * availableImages.length);
+            currentImage = availableImages[randomIndex];
+
+            const tvImage = document.getElementById('tvImage');
+            tvImage.src = `/images/channels/${currentImage}`;
+            tvImage.style.display = 'block';
+
+            tvImage.onload = () => {
+                displayCatScanAnimation(currentImage);
+                setNumberPadEnabled(false);
+            };
+
+            tvImage.onerror = () => {
+                alert('이미지를 불러올 수 없습니다!');
+                tvImage.style.display = 'none';
+            };
+        }
+
+        // ==================== 스캔 애니메이션으로 고양이 감지 표시 ====================
+        function displayCatScanAnimation(imageName) {
+            // 기존 펄스와 스캔 라인 제거
+            const existingPulses = document.querySelectorAll('.cat-pulse');
+            existingPulses.forEach(pulse => pulse.remove());
+
+            const existingScanLine = document.querySelector('.scan-line');
+            if (existingScanLine) existingScanLine.remove();
+
+            if (!catPositions[imageName]) {
+                console.warn(`${imageName}에 대한 고양이 위치 정보가 없습니다.`);
+                return;
+            }
+
+            const cats = catPositions[imageName].cats;
+            const tvScreen = document.getElementById('tvScreen');
+
+            // 카운터 초기화 및 표시
+            updateCatCounter(0);
+
+            // 스캔 라인 생성
+            const scanLine = document.createElement('div');
+            scanLine.className = 'scan-line';
+            tvScreen.appendChild(scanLine);
+
+            let detectedCount = 0;
+
+            // 각 고양이 위치에 펄스 효과 추가 (스캔 라인이 지나갈 때)
+            cats.forEach((cat, index) => {
+                // 스캔 라인이 해당 위치에 도달하는 시간 계산 (2초 동안 0%에서 100%로 이동)
+                const delay = cat.x * 2000; // x 좌표에 비례한 딜레이 (밀리초)
+
+                setTimeout(() => {
+                    const pulse = document.createElement('div');
+                    pulse.className = 'cat-pulse';
+                    pulse.style.left = `${cat.x * 100}%`;
+                    pulse.style.top = `${cat.y * 100}%`;
+                    tvScreen.appendChild(pulse);
+
+                    // 카운터 증가 (팡 효과)
+                    detectedCount++;
+                    updateCatCounter(detectedCount);
+
+                    // 플로팅 숫자 표시 제거됨
+
+                    // 펄스 애니메이션이 끝나면 제거
+                    setTimeout(() => {
+                        pulse.remove();
+                    }, 1500);
+                }, delay);
+            });
+
+            // 스캔 라인 제거 및 다음 버튼 활성화
+            setTimeout(() => {
+                scanLine.remove();
+                setNextButtonEnabled(true);
+                updateNextButtonText();
+            }, 2000);
+        }
+
+        // ==================== 플레이어 확정 ====================
+        function confirmPlayer() {
+            const name = document.getElementById('playerName').value.trim();
+            const channelNum = parseInt(currentChannel);
+
+            const validation = validatePlayerName(name);
+            if (!validation.valid) {
+                alert(validation.message);
+                return;
+            }
+
+            if (!currentChannel || channelNum < 1 || channelNum > 999) {
+                alert('채널을 먼저 선택해주세요! (1~999)');
+                return;
+            }
+
+            if (!currentImage) {
+                alert('채널변경 버튼을 눌러 이미지를 먼저 표시해주세요!');
+                return;
+            }
+
+            const catCount = getCatCount(currentImage);
+
+            players.push({
+                name: name,
+                channel: currentChannel.padStart(3, '0'),
+                catCount: catCount,
+                imageName: currentImage
+            });
+
+            usedImages.push(currentImage);
+            currentPlayerIndex++;
+
+            if (currentPlayerIndex < totalPlayers) {
+                resetForNextPlayer();
+            } else {
+                showResults();
+            }
+        }
+
+        // ==================== 다음 플레이어 준비 ====================
+        function resetForNextPlayer() {
+            currentChannel = '';
+            currentImage = '';
+
+            const tvImage = document.getElementById('tvImage');
+            tvImage.style.display = 'none';
+
+            // 펄스와 스캔 라인 제거
+            const existingPulses = document.querySelectorAll('.cat-pulse');
+            existingPulses.forEach(pulse => pulse.remove());
+
+            const existingScanLine = document.querySelector('.scan-line');
+            if (existingScanLine) existingScanLine.remove();
+
+            // 카운터 숨기기
+            const counter = document.getElementById('catCounter');
+            counter.classList.remove('active');
+
+            updateChannelDisplay();
+            updatePlayerInfo();
+            setDefaultPlayerName();
+            setNumberPadEnabled(true);
+            setNextButtonEnabled(false);
+        }
+
+        // ==================== 고양이 개수 계산 ====================
+        function getCatCount(imageName) {
+            if (catPositions[imageName] && catPositions[imageName].cats) {
+                return catPositions[imageName].cats.length;
+            }
+            return 0;
+        }
+
+        // ==================== 결과 표시 (수정된 공동 등수 처리 + 썸네일) ====================
+        function showResults() {
+            players.sort((a, b) => b.catCount - a.catCount);
+
+            const resultList = document.getElementById('resultList');
+            resultList.innerHTML = '';
+
+            // 각 점수별 플레이어 수 카운트
+            const scoreCount = {};
+            players.forEach(player => {
+                scoreCount[player.catCount] = (scoreCount[player.catCount] || 0) + 1;
+            });
+
+            let currentRank = 1;
+            let previousCount = -1;
+
+            players.forEach((player, index) => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'result-item';
+
+                // 등수 업데이트
+                if (player.catCount !== previousCount) {
+                    currentRank = index + 1;
+                }
+                previousCount = player.catCount;
+
+                // 같은 점수를 가진 플레이어가 2명 이상인지 확인
+                const isTied = scoreCount[player.catCount] > 1;
+
+                let rankClass = '';
+                let rankEmoji = '';
+                let rankText = '';
+
+                if (currentRank === 1) {
+                    rankClass = 'first';
+                    rankEmoji = '🥇';
+                    rankText = isTied ? '공동 1등' : '1등';
+                } else if (currentRank === 2) {
+                    rankClass = 'second';
+                    rankEmoji = '🥈';
+                    rankText = isTied ? '공동 2등' : '2등';
+                } else if (currentRank === 3) {
+                    rankClass = 'third';
+                    rankEmoji = '🥉';
+                    rankText = isTied ? '공동 3등' : '3등';
+                } else {
+                    rankText = isTied ? `공동 ${currentRank}등` : `${currentRank}등`;
+                }
+
+                resultItem.innerHTML = `
+                    <div class="result-rank ${rankClass}">
+                        ${rankEmoji ? `<span class="rank-emoji">${rankEmoji}</span>` : ''}
+                        <span class="rank-text">${rankText}</span>
+                    </div>
+                    <div class="result-info">
+                        <div class="result-name">${player.name}</div>
+                        <div class="result-details">
+                            <span class="result-channel">채널 ${player.channel}</span>
+                            <span class="result-score">🐱 ${player.catCount}마리</span>
+                        </div>
+                    </div>
+                    <div class="result-thumbnail">
+                        <img src="/images/channels/${player.imageName}" alt="채널 ${player.channel}">
+                    </div>
+                `;
+
+                resultList.appendChild(resultItem);
+            });
+
+            document.getElementById('remoteControl').style.display = 'none';
+            document.getElementById('resultScreen').classList.add('active');
+        }
+
+        // ==================== 게임 리셋 ====================
+        function resetGame() {
+            location.reload();
+        }
+    </script>
+</body>
+
+</html>

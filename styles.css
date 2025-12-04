@@ -1,0 +1,778 @@
+﻿* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f1ea;
+    /* background-image removed */
+    height: 100vh;
+    /* min-height 대신 height로 변경하여 스크롤 제어 */
+    min-width: 344px;
+    min-height: 667px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    /* space-between에서 변경하여 상단부터 배치 */
+    padding: 10px 20px 0 20px;
+    padding-top: max(10px, env(safe-area-inset-top));
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: max(20px, env(safe-area-inset-left));
+    padding-right: max(20px, env(safe-area-inset-right));
+    overflow-x: auto;
+    /* 최소 너비보다 작을 때 스크롤 허용 */
+    overflow-y: auto;
+    /* 최소 높이보다 작을 때 스크롤 허용 */
+    position: relative;
+}
+
+.logo {
+    margin-bottom: 8px;
+    z-index: 10;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.logo img {
+    height: 78px;
+    width: auto;
+    display: block;
+}
+
+.tv-container {
+    width: 100%;
+    /* 모바일 기본: 게임 정보 영역과 동일하게 맞춤 */
+    max-width: min(500px, 70vh);
+    position: relative;
+    margin: 0;
+    z-index: 10;
+    flex: 0 0 auto;
+    /* 수축 방지 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    /* min-height: 0; 제거 */
+}
+
+.wall-decoration-area {
+    width: 100%;
+    /* 모바일 기본: TV와 동일한 제약 조건 적용 */
+    max-width: min(500px, 70vh);
+    flex: 1;
+    min-height: 100px;
+    /* 최소 높이 100px 고정 */
+    position: relative;
+}
+
+.tv-screen {
+    width: 100%;
+    height: auto;
+    /* 높이 자동 조절로 비율 유지 */
+    aspect-ratio: 16 / 11;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+    border: 5px solid #2d2d2d;
+    border-radius: 0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3),
+        inset 0 0 40px rgba(255, 255, 255, 0.05),
+        inset -20px -20px 60px rgba(255, 255, 255, 0.02);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    /* 수축 방지 */
+}
+
+.tv-screen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg,
+            rgba(255, 255, 255, 0.15) 0%,
+            rgba(255, 255, 255, 0.08) 25%,
+            rgba(255, 255, 255, 0) 50%,
+            rgba(0, 0, 0, 0.1) 75%,
+            rgba(0, 0, 0, 0.2) 100%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.tv-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.tv-brand {
+    position: absolute;
+    bottom: 0px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.7rem;
+    font-weight: 300;
+    color: #fff;
+    letter-spacing: 1.5px;
+    z-index: 200;
+
+}
+
+.channel-display {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(255, 255, 255, 0.5);
+    color: #333;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 1.1rem;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-weight: 700;
+    display: none;
+    z-index: 250;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+}
+
+.channel-display.active {
+    display: block;
+}
+
+/* ==================== 고양이 카운터 (심플 버전) ==================== */
+.cat-counter {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: rgba(255, 255, 255, 0.9);
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 3rem;
+    font-weight: 700;
+    display: none;
+    z-index: 250;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.cat-counter.active {
+    display: block;
+}
+
+.cat-counter.pop {
+    animation: counterPop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes counterPop {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.3);
+        text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* ==================== 스캔 및 효과 애니메이션 ==================== */
+.scan-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 2px;
+    height: 100%;
+    background: rgba(0, 255, 255, 0.8);
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+    z-index: 20;
+    animation: scanMove 2s linear forwards;
+}
+
+@keyframes scanMove {
+    0% {
+        left: 0;
+    }
+
+    100% {
+        left: 100%;
+    }
+}
+
+.cat-pulse {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: rgba(255, 50, 50, 0.8);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 15;
+    animation: pulse 1.5s ease-out infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(255, 50, 50, 0.7);
+    }
+
+    70% {
+        transform: translate(-50%, -50%) scale(3);
+        opacity: 0;
+        box-shadow: 0 0 0 20px rgba(255, 50, 50, 0);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(3);
+        opacity: 0;
+        box-shadow: 0 0 0 20px rgba(255, 50, 50, 0);
+    }
+}
+
+.initial-screen {
+    width: 100%;
+    /* 모바일 기본: TV와 동일한 제약 조건 적용 */
+    max-width: min(500px, 70vh);
+    background: #ffffff;
+    border-radius: 32px 32px 0 0;
+    padding: 20px 24px;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15);
+    transition: transform 0.5s ease, opacity 0.5s ease;
+    z-index: 10;
+    position: relative;
+    margin-top: auto;
+    margin-bottom: 0;
+}
+
+.initial-screen.slide-out {
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.input-group {
+    margin-bottom: 16px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #191f28;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.input-group select {
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    background: #f2f4f6;
+    color: #333d4b;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.input-group select:focus {
+    outline: none;
+    background: #e5e8eb;
+}
+
+.btn {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 16px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background-color: #3182f6;
+    color: white;
+    box-shadow: 0 4px 12px rgba(49, 130, 246, 0.3);
+}
+
+.btn-primary:hover {
+    background-color: #1b64da;
+    transform: translateY(-2px);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.remote-control {
+    width: 100%;
+    /* 모바일 기본: TV와 동일한 제약 조건 적용 */
+    max-width: min(500px, 70vh);
+    background: #ffffff;
+    border-radius: 32px 32px 0 0;
+    padding: 10px 18px;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15);
+    display: none;
+    z-index: 100;
+    margin-top: auto;
+}
+
+.remote-control.slide-in {
+    display: block;
+    animation: slideUp 0.4s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.remote-header {
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.player-info {
+    font-size: 0.9rem;
+    color: #8b95a1;
+    font-weight: 500;
+}
+
+.name-input {
+    width: 100%;
+    padding: 8px;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+    text-align: center;
+    background: #f2f4f6;
+    color: #333d4b;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.name-input:focus {
+    outline: none;
+    background: #e5e8eb;
+}
+
+.name-input::placeholder {
+    color: #b0b8c1;
+}
+
+.number-pad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    margin-bottom: 8px;
+}
+
+.number-btn {
+    aspect-ratio: 2.2;
+    background: #ffffff;
+    border: 1px solid #e5e8eb;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #191f28;
+    cursor: pointer;
+    transition: all 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.number-btn:hover {
+    background-color: #f9fafb;
+}
+
+.number-btn:active,
+.number-btn.pressed {
+    transform: scale(0.96);
+}
+
+.number-btn.channel-change {
+    font-size: 0.9rem;
+    background-color: #3182f6;
+    color: white;
+    border: none;
+    box-shadow: 0 2px 6px rgba(49, 130, 246, 0.3);
+}
+
+.number-btn.channel-change:hover {
+    background-color: #1b64da;
+}
+
+#btnBackspace {
+    background-color: #f2f4f6;
+    color: #4e5968;
+    border: none;
+}
+
+.number-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.btn-next {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 16px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    background-color: #3182f6;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(49, 130, 246, 0.3);
+}
+
+.btn-next:hover:not(:disabled) {
+    background-color: #1b64da;
+    transform: translateY(-2px);
+}
+
+.btn-next:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn-next:disabled {
+    background-color: #d1d6db;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ==================== 토스 스타일 결과 화면 (전체 화면 오버레이) ==================== */
+.result-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    display: none;
+    z-index: 1000;
+    padding: 40px 20px;
+}
+
+.result-screen.active {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.result-screen h2 {
+    color: #ffffff;
+    text-align: center;
+    margin-bottom: 24px;
+    font-size: 1.8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+#resultList {
+    width: 100%;
+    max-width: 700px;
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    margin-bottom: 24px;
+    overflow-y: auto;
+    max-height: 60vh;
+    flex: 1;
+}
+
+.result-item {
+    background: #f9fafb;
+    border: 1px solid #e5e8eb;
+    padding: 16px;
+    border-radius: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s ease;
+}
+
+.result-item:hover {
+    background: #f2f4f6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.result-rank {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 90px;
+}
+
+.rank-emoji {
+    font-size: 1.6rem;
+}
+
+.rank-text {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #4e5968;
+}
+
+.result-rank.first .rank-text {
+    color: #ffd700;
+}
+
+.result-rank.second .rank-text {
+    color: #c0c0c0;
+}
+
+.result-rank.third .rank-text {
+    color: #cd7f32;
+}
+
+.result-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.result-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #191f28;
+}
+
+.result-details {
+    display: flex;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: #8b95a1;
+}
+
+.result-channel {
+    font-weight: 600;
+    color: #3182f6;
+}
+
+.result-score {
+    font-weight: 700;
+    color: #ff6b9d;
+}
+
+.result-thumbnail {
+    width: 90px;
+    height: 90px;
+    border-radius: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 2px solid #e5e8eb;
+}
+
+.result-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+
+@media (min-width: 768px) {
+    .tv-container {
+        /* 태블릿/PC: TV는 세로 크기에 맞춰 줄어들 수 있음 */
+        max-width: min(800px, 70vh);
+    }
+
+    .wall-decoration-area {
+        /* 벽 장식 영역도 TV와 동일한 너비 규칙 적용 */
+        max-width: min(800px, 70vh);
+    }
+
+    .initial-screen,
+    .remote-control {
+        /* 태블릿/PC: 리모컨/초기화면은 가로 800px 고정 (버튼 깨짐 방지) */
+        width: 800px;
+        max-width: 800px;
+        padding: 20px 40px;
+    }
+
+    .remote-header {
+        margin-bottom: 16px;
+    }
+
+    .name-input {
+        margin-bottom: 16px;
+        padding: 12px;
+    }
+
+    .number-pad {
+        grid-template-columns: repeat(12, 1fr);
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .number-btn {
+        font-size: 1.2rem;
+        aspect-ratio: 1.2;
+        border-radius: 12px;
+    }
+
+    .number-btn.channel-change {
+        font-size: 0.9rem;
+        line-height: 1.2;
+        order: 3;
+    }
+
+    #btn0 {
+        order: 1;
+    }
+
+    #btnBackspace {
+        order: 2;
+    }
+
+    .btn-next {
+        padding: 14px;
+    }
+
+    .result-thumbnail {
+        width: 110px;
+        height: 110px;
+    }
+}
+
+@media (max-width: 640px) {
+    body {
+        padding: 8px 15px 0 15px;
+    }
+
+    .logo img {
+        height: 65px;
+    }
+
+    .tv-container {
+        /* 모바일: 여백 줄임 */
+        margin: 5px 0 15px 0;
+    }
+
+    .tv-screen {
+        border: 5px solid #2d2d2d;
+    }
+
+    .tv-brand {
+        bottom: 6px;
+        font-size: 0.6rem;
+    }
+
+    .channel-display {
+        top: 12px;
+        right: 12px;
+        font-size: 0.95rem;
+        padding: 5px 12px;
+    }
+
+    .cat-counter {
+        top: 15px;
+        left: 15px;
+        font-size: 2.5rem;
+    }
+
+    .initial-screen {
+        border-radius: 20px 20px 0 0;
+        padding: 16px 20px;
+    }
+
+    .input-group {
+        margin-bottom: 12px;
+    }
+
+    .input-group label {
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+    }
+
+    .input-group select {
+        padding: 10px 14px;
+        font-size: 0.95rem;
+    }
+
+    .btn {
+        padding: 14px;
+        font-size: 1rem;
+    }
+
+    .remote-control {
+        border-radius: 20px 20px 0 0;
+        padding: 8px 16px;
+    }
+
+    .remote-header {
+        margin-bottom: 6px;
+    }
+
+    .player-info {
+        font-size: 0.85rem;
+    }
+
+    .name-input {
+        padding: 7px;
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+        border-radius: 10px;
+    }
+
+    .number-pad {
+        gap: 4px;
+        margin-bottom: 6px;
+    }
+
+    .number-btn {
+        font-size: 1rem;
+        aspect-ratio: 2.2;
+        border-radius: 10px;
+    }
+
+    .number-btn.channel-change {
+        font-size: 0.85rem;
+        line-height: 1.2;
+    }
+
+    .btn-next {
+        padding: 10px;
+        font-size: 1rem;
+        border-radius: 12px;
+    }
+
+    .result-thumbnail {
+        width: 70px;
+        height: 70px;
+    }
+}
+
+.hidden {
+    display: none !important;
+}
