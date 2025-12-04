@@ -328,6 +328,7 @@ body {
     display: none;
     z-index: 100;
     margin-top: auto;
+    margin-bottom: env(safe-area-inset-bottom, 0);
 }
 
 .remote-control.slide-in {
