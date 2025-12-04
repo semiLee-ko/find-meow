@@ -138,7 +138,7 @@
         // ==================== 초기화 ====================
         window.addEventListener('DOMContentLoaded', async () => {
             try {
-                const response = await fetch('/point/json/pointInfo.json');
+                const response = await fetch('point/json/pointInfo.json');
                 if (response.ok) {
                     catPositions = await response.json();
                     console.log('고양이 위치 정보 로드 완료');
@@ -263,7 +263,7 @@
             currentImage = availableImages[randomIndex];
 
             const tvImage = document.getElementById('tvImage');
-            tvImage.src = `/images/channels/${currentImage}`;
+            tvImage.src = `images/channels/${currentImage}`;
             tvImage.style.display = 'block';
 
             tvImage.onload = () => {
@@ -473,7 +473,7 @@
                         </div>
                     </div>
                     <div class="result-thumbnail">
-                        <img src="/images/channels/${player.imageName}" alt="채널 ${player.channel}">
+                        <img src="images/channels/${player.imageName}" alt="채널 ${player.channel}">
                     </div>
                 `;
 
