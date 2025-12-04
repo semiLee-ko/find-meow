@@ -2,6 +2,35 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f1ea;
+    min-height: 100dvh;
+    min-width: 344px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+
+    padding: 10px 20px 0 20px;
+
+    /* Safe Area */
+    padding-top: max(10px, env(safe-area-inset-top));
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+    padding-left: max(20px, env(safe-area-inset-left));
+    padding-right: max(20px, env(safe-area-inset-right));
+
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: relative;
+}
+
+.logo {
+    margin-bottom: 8px;
+    z-index: 10;
     position: relative;
     flex-shrink: 0;
 }
