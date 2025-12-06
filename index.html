@@ -219,8 +219,35 @@
         <source src="audio/scan.mp3" type="audio/mpeg">
     </audio>
 
-    <!-- 고양이 발견 효과음 -->
-    <audio id="catSound">
+    <!-- 고양이 발견 효과음 (여러 개 동시 재생을 위한 풀) -->
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
         <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
     </audio>
 
@@ -262,6 +289,10 @@
             '살랑이', '초코꼬리', '동글냥', '하늘발자국', '달냥이',
             '순둥냥', '눈송이냥', '포포냥', '가을냥', '총총이'
         ];
+
+        // 고양이 사운드 풀 초기화
+        const catSoundPool = Array.from(document.querySelectorAll('.catSound'));
+        let currentCatSoundIndex = 0;
 
         let totalPlayers = 3;
         let currentPlayerIndex = 0;
@@ -728,9 +759,13 @@
                     detectedCount++;
                     updateCatCounter(detectedCount);
 
-                    // 고양이 발견 사운드 재생 (새 Audio 객체 생성으로 여러 개 동시 재생)
-                    const catSound = new Audio('audio/small_cat_sound.mp3');
+                    // 고양이 발견 사운드 재생 (오디오 풀 사용)
+                    const catSound = catSoundPool[currentCatSoundIndex];
+                    catSound.currentTime = 0;
                     catSound.play().catch(error => console.warn('고양이 사운드 재생 실패:', error));
+
+                    // 다음 오디오 요소로 순환
+                    currentCatSoundIndex = (currentCatSoundIndex + 1) % catSoundPool.length;
 
                     // 플로팅 숫자 표시 제거됨
 
