@@ -201,9 +201,47 @@
         </div>
     </div>
 
+    <!-- 커스텀 Alert 팝업 -->
+    <div class="custom-alert-overlay" id="customAlertOverlay" onclick="closeCustomAlert()">
+        <div class="custom-alert-popup" onclick="event.stopPropagation()">
+            <div class="custom-alert-message" id="customAlertMessage"></div>
+            <button class="custom-alert-button" onclick="closeCustomAlert()">확인</button>
+        </div>
+    </div>
+
     <!-- 배경 음악 -->
     <audio id="bgMusic" loop>
         <source id="bgMusicSrc" src="audio/background-music.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 스캔 효과음 -->
+    <audio id="scanSound">
+        <source src="audio/scan.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 고양이 발견 효과음 -->
+    <audio id="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 클릭 효과음 -->
+    <audio id="clickSound">
+        <source src="audio/click.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 실패 효과음 -->
+    <audio id="failSound">
+        <source src="audio/fail.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 게임 시작 효과음 -->
+    <audio id="gameStartSound">
+        <source src="audio/game_start.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 게임 종료 효과음 -->
+    <audio id="gameEndSound">
+        <source src="audio/game_end.mp3" type="audio/mpeg">
     </audio>
 
     <script>
@@ -323,6 +361,19 @@
             const popup = document.getElementById('infoPopup');
             popup.classList.remove('active');
             document.body.style.overflow = ''; // 스크롤 복원
+        }
+
+        // ==================== 커스텀 Alert 팝업 ====================
+        function showCustomAlert(message) {
+            const overlay = document.getElementById('customAlertOverlay');
+            const messageEl = document.getElementById('customAlertMessage');
+            messageEl.textContent = message;
+            overlay.classList.add('active');
+        }
+
+        function closeCustomAlert() {
+            const overlay = document.getElementById('customAlertOverlay');
+            overlay.classList.remove('active');
         }
 
         // ==================== 고양이 발자국 애니메이션 ====================
@@ -447,6 +498,11 @@
 
         // ==================== 게임 시작 ====================
         function startGame() {
+            // 게임 시작 사운드 재생
+            const gameStartSound = document.getElementById('gameStartSound');
+            gameStartSound.currentTime = 0;
+            gameStartSound.play().catch(error => console.warn('게임 시작 사운드 재생 실패:', error));
+
             totalPlayers = parseInt(document.getElementById('playerCount').value);
             currentPlayerIndex = 0;
             players = [];
@@ -455,7 +511,9 @@
             document.getElementById('initialScreen').classList.add('slide-out');
             setTimeout(() => {
                 document.getElementById('initialScreen').classList.add('hidden');
-                document.getElementById('remoteControl').classList.add('slide-in');
+                const remoteControl = document.getElementById('remoteControl');
+                remoteControl.style.display = 'block';
+                remoteControl.classList.add('slide-in');
                 updatePlayerInfo();
                 setDefaultPlayerName();
             }, 500);
@@ -550,14 +608,21 @@
             const channelNum = parseInt(currentChannel);
 
             if (!currentChannel || channelNum < 1 || channelNum > 999) {
-                alert('채널 번호는 1~999 사이로 입력해주세요!');
+                showCustomAlert('채널 번호는 1~999 사이로 입력해주세요!');
+                return;
+            }
+
+            // 이미 사용된 채널 번호인지 확인
+            const usedChannels = players.map(p => p.channel);
+            if (usedChannels.includes(currentChannel.padStart(3, '0'))) {
+                showCustomAlert(`채널 ${currentChannel.padStart(3, '0')}번은 이미 선택되었습니다!\n\n사용된 채널: ${usedChannels.join(', ')}`);
                 return;
             }
 
             const availableImages = channelImages.filter(img => !usedImages.includes(img));
 
             if (availableImages.length === 0) {
-                alert('사용 가능한 이미지가 모두 소진되었습니다!');
+                showCustomAlert('사용 가능한 이미지가 모두 소진되었습니다!');
                 return;
             }
 
@@ -574,7 +639,7 @@
             };
 
             tvImage.onerror = () => {
-                alert('이미지를 불러올 수 없습니다!');
+                showCustomAlert('이미지를 불러올 수 없습니다!');
                 tvImage.style.display = 'none';
             };
         }
@@ -606,6 +671,11 @@
             scanLine.className = 'scan-line';
             tvScreen.appendChild(scanLine);
 
+            // 스캔 사운드 재생
+            const scanSound = document.getElementById('scanSound');
+            scanSound.currentTime = 0;
+            scanSound.play().catch(error => console.warn('스캔 사운드 재생 실패:', error));
+
             let detectedCount = 0;
 
             // 각 고양이 위치에 펄스 효과 추가 (스캔 라인이 지나갈 때)
@@ -624,6 +694,11 @@
                     detectedCount++;
                     updateCatCounter(detectedCount);
 
+                    // 고양이 발견 사운드 재생
+                    const catSound = document.getElementById('catSound');
+                    catSound.currentTime = 0;
+                    catSound.play().catch(error => console.warn('고양이 사운드 재생 실패:', error));
+
                     // 플로팅 숫자 표시 제거됨
 
                     // 펄스 애니메이션이 끝나면 제거
@@ -636,6 +711,14 @@
             // 스캔 라인 제거 및 다음 버튼 활성화
             setTimeout(() => {
                 scanLine.remove();
+
+                // 고양이가 0마리면 실패 사운드 재생
+                if (detectedCount === 0) {
+                    const failSound = document.getElementById('failSound');
+                    failSound.currentTime = 0;
+                    failSound.play().catch(error => console.warn('실패 사운드 재생 실패:', error));
+                }
+
                 setNextButtonEnabled(true);
                 updateNextButtonText();
             }, 2000);
@@ -648,18 +731,31 @@
 
             const validation = validatePlayerName(name);
             if (!validation.valid) {
-                alert(validation.message);
+                showCustomAlert(validation.message);
                 return;
             }
 
             if (!currentChannel || channelNum < 1 || channelNum > 999) {
-                alert('채널을 먼저 선택해주세요! (1~999)');
+                showCustomAlert('채널을 먼저 선택해주세요! (1~999)');
                 return;
             }
 
             if (!currentImage) {
-                alert('채널변경 버튼을 눌러 이미지를 먼저 표시해주세요!');
+                showCustomAlert('채널변경 버튼을 눌러 이미지를 먼저 표시해주세요!');
                 return;
+            }
+
+            // 버튼 사운드 재생 (마지막 플레이어면 game_end, 아니면 click)
+            if (currentPlayerIndex === totalPlayers - 1) {
+                // 결과 확인 버튼
+                const gameEndSound = document.getElementById('gameEndSound');
+                gameEndSound.currentTime = 0;
+                gameEndSound.play().catch(error => console.warn('게임 종료 사운드 재생 실패:', error));
+            } else {
+                // 다음 버튼
+                const clickSound = document.getElementById('clickSound');
+                clickSound.currentTime = 0;
+                clickSound.play().catch(error => console.warn('클릭 사운드 재생 실패:', error));
             }
 
             const catCount = getCatCount(currentImage);
@@ -790,7 +886,53 @@
 
         // ==================== 게임 리셋 ====================
         function resetGame() {
-            location.reload();
+            // 게임 상태 초기화 (음악은 유지)
+            totalPlayers = 3;
+            currentPlayerIndex = 0;
+            currentChannel = '';
+            currentImage = '';
+            players = [];
+            usedImages = [];
+
+            // UI 초기화
+            document.getElementById('resultScreen').classList.remove('active');
+            document.getElementById('remoteControl').style.display = 'none';
+            document.getElementById('remoteControl').classList.remove('slide-in');
+            document.getElementById('initialScreen').classList.remove('slide-out', 'hidden');
+
+            // TV 화면 초기화
+            const tvImage = document.getElementById('tvImage');
+            tvImage.style.display = 'none';
+            tvImage.src = '';
+            tvImage.onload = null;
+            tvImage.onerror = null;
+
+            // 카운터 초기화
+            const counter = document.getElementById('catCounter');
+            counter.classList.remove('active', 'pop');
+            counter.textContent = '0';
+
+            // 채널 디스플레이 초기화
+            const channelDisplay = document.getElementById('channelDisplay');
+            channelDisplay.classList.remove('active');
+            channelDisplay.textContent = '000';
+
+            // 플레이어 수 선택 초기화
+            document.getElementById('playerCount').value = '3';
+
+            // 입력 필드 초기화
+            document.getElementById('playerName').value = '';
+
+            // 버튼 상태 초기화
+            setNumberPadEnabled(true);
+            setNextButtonEnabled(false);
+
+            // 펄스와 스캔 라인 제거
+            const existingPulses = document.querySelectorAll('.cat-pulse');
+            existingPulses.forEach(pulse => pulse.remove());
+
+            const existingScanLine = document.querySelector('.scan-line');
+            if (existingScanLine) existingScanLine.remove();
         }
     </script>
 </body>
