@@ -249,10 +249,39 @@
         </div>
     </div>
 
+
     <!-- 배경 음악 -->
-    <audio id="bgMusic" loop>
+    <audio id="bgMusic" loop preload="auto">
         <source id="bgMusicSrc" src="audio/background-music.mp3" type="audio/mpeg">
     </audio>
+
+    <!-- 디버그 패널 (개발용) -->
+    <div id="debugPanel" style="
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        max-width: 300px;
+        max-height: 400px;
+        background: rgba(0, 0, 0, 0.85);
+        color: #00ff00;
+        font-family: monospace;
+        font-size: 11px;
+        padding: 10px;
+        border-radius: 8px;
+        overflow-y: auto;
+        z-index: 9999;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        display: none;
+    ">
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #00ff00; padding-bottom: 5px;">
+            <strong>🔍 Audio Debug</strong>
+            <button onclick="document.getElementById('debugPanel').style.display='none'"
+                style="background: transparent; border: 1px solid #00ff00; color: #00ff00; padding: 2px 6px; cursor: pointer; border-radius: 3px;">✕</button>
+        </div>
+        <div id="debugLog" style="font-size: 10px; line-height: 1.4;"></div>
+    </div>
+
 
     <!-- 스캔 효과음 -->
     <audio id="scanSound">
@@ -442,9 +471,51 @@
         // ==================== 배경 음악 토글 ====================
         let isMusicPlaying = false;
 
+        // ==================== 디버그 로깅 함수 ====================
+        function debugLog(message, type = 'info') {
+            const debugPanel = document.getElementById('debugPanel');
+            const debugLogDiv = document.getElementById('debugLog');
 
-        function toggleMusic() {
-            const bgMusic = document.getElementById('bgMusic');
+            if (!debugPanel || !debugLogDiv) return;
+
+            // 패널 자동 표시
+            debugPanel.style.display = 'block';
+
+            const timestamp = new Date().toLocaleTimeString('ko-KR', {
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                fractionalSecondDigits: 1
+            });
+
+            const colors = {
+                info: '#00ff00',
+                warn: '#ffaa00',
+                error: '#ff0000',
+                success: '#00ffff'
+            };
+
+            const color = colors[type] || colors.info;
+
+            const logEntry = document.createElement('div');
+            logEntry.style.color = color;
+            logEntry.style.marginBottom = '3px';
+            logEntry.style.wordBreak = 'break-word';
+            logEntry.innerHTML = `<span style="opacity:0.6">[${timestamp}]</span> ${message}`;
+
+            debugLogDiv.appendChild(logEntry);
+
+            // 로그가 50줄 넘으면 오래된 것 삭제
+            while (debugLogDiv.children.length > 50) {
+                debugLogDiv.removeChild(debugLogDiv.firstChild);
+            }
+
+            // 자동 스크롤
+            debugLogDiv.scrollTop = debugLogDiv.scrollHeight;
+
+            // console에도 출력
+            console.log(`[DEBUG] ${message}`);
             const bgMusicSrc = document.getElementById('bgMusicSrc');
             const powerButton = document.getElementById('powerButton');
             const ledIndicator = document.getElementById('ledIndicator');
