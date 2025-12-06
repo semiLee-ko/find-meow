@@ -255,34 +255,6 @@
         <source id="bgMusicSrc" src="audio/background-music.mp3" type="audio/mpeg">
     </audio>
 
-    <!-- 디버그 패널 (개발용) -->
-    <div id="debugPanel" style="
-        position: fixed;
-        bottom: 20px;
-        left: 20px;
-        max-width: 300px;
-        max-height: 400px;
-        background: rgba(0, 0, 0, 0.85);
-        color: #00ff00;
-        font-family: monospace;
-        font-size: 11px;
-        padding: 10px;
-        border-radius: 8px;
-        overflow-y: auto;
-        z-index: 9999;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-        display: none;
-    ">
-        <div
-            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #00ff00; padding-bottom: 5px;">
-            <strong>🔍 Audio Debug</strong>
-            <button onclick="document.getElementById('debugPanel').style.display='none'"
-                style="background: transparent; border: 1px solid #00ff00; color: #00ff00; padding: 2px 6px; cursor: pointer; border-radius: 3px;">✕</button>
-        </div>
-        <div id="debugLog" style="font-size: 10px; line-height: 1.4;"></div>
-    </div>
-
-
     <!-- 스캔 효과음 -->
     <audio id="scanSound">
         <source src="audio/scan.mp3" type="audio/mpeg">
@@ -471,104 +443,7 @@
         // ==================== 배경 음악 토글 ====================
         let isMusicPlaying = false;
 
-        // ==================== 디버그 로깅 함수 ====================
-        function debugLog(message, type = 'info') {
-            const debugPanel = document.getElementById('debugPanel');
-            const debugLogDiv = document.getElementById('debugLog');
-
-            if (!debugPanel || !debugLogDiv) return;
-
-            // 패널 자동 표시
-            debugPanel.style.display = 'block';
-
-            const timestamp = new Date().toLocaleTimeString('ko-KR', {
-                hour12: false,
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                fractionalSecondDigits: 1
-            });
-
-            const colors = {
-                info: '#00ff00',
-                warn: '#ffaa00',
-                error: '#ff0000',
-                success: '#00ffff'
-            };
-
-            const color = colors[type] || colors.info;
-
-            const logEntry = document.createElement('div');
-            logEntry.style.color = color;
-            logEntry.style.marginBottom = '3px';
-            logEntry.style.wordBreak = 'break-word';
-            logEntry.innerHTML = `<span style="opacity:0.6">[${timestamp}]</span> ${message}`;
-
-            debugLogDiv.appendChild(logEntry);
-
-            // 로그가 50줄 넘으면 오래된 것 삭제
-            while (debugLogDiv.children.length > 50) {
-                debugLogDiv.removeChild(debugLogDiv.firstChild);
-            }
-
-            // 자동 스크롤
-            debugLogDiv.scrollTop = debugLogDiv.scrollHeight;
-
-            // console에도 출력
-            console.log(`[DEBUG] ${message}`);
-        }
-
         // ==================== 오디오 디버깅 및 에러 복구 ====================
-        const bgMusicElement = document.getElementById('bgMusic');
-        if (bgMusicElement) {
-            debugLog('🎵 Audio element initialized', 'success');
-
-            // 오디오 로딩 상태 추적
-            bgMusicElement.addEventListener('loadstart', () => debugLog('🎵 loadstart'));
-            bgMusicElement.addEventListener('loadedmetadata', () => debugLog(`🎵 loadedmetadata (${bgMusicElement.duration.toFixed(1)}s)`));
-            bgMusicElement.addEventListener('loadeddata', () => debugLog('🎵 loadeddata', 'success'));
-            bgMusicElement.addEventListener('canplay', () => debugLog('✅ canplay'));
-            bgMusicElement.addEventListener('canplaythrough', () => debugLog('✅ canplaythrough', 'success'));
-
-            // 재생 상태 추적
-            bgMusicElement.addEventListener('play', () => debugLog('▶️ PLAY', 'success'));
-            bgMusicElement.addEventListener('pause', () => debugLog('⏸️ PAUSE', 'warn'));
-            bgMusicElement.addEventListener('ended', () => debugLog('🔚 ended'));
-            bgMusicElement.addEventListener('timeupdate', (e) => {
-                // 5초마다만
-                if (Math.floor(e.target.currentTime) % 5 === 0 && Math.floor(e.target.currentTime) !== window.lastLoggedTime) {
-                    debugLog(`⏰ ${e.target.currentTime.toFixed(1)}s / ${e.target.duration.toFixed(1)}s`);
-                    window.lastLoggedTime = Math.floor(e.target.currentTime);
-                }
-            });
-
-            // 에러 감지 및 복구
-            bgMusicElement.addEventListener('error', (e) => {
-                debugLog(`❌ ERROR: ${bgMusicElement.error ? bgMusicElement.error.message : 'Unknown'}`, 'error');
-                if (isMusicPlaying) {
-                    debugLog('🔄 Reloading...', 'warn');
-                    setTimeout(() => {
-                        bgMusicElement.load();
-                        bgMusicElement.play().catch(err => debugLog('❌ Reload failed: ' + err.message, 'error'));
-                    }, 1000);
-                }
-            });
-
-            bgMusicElement.addEventListener('stalled', () => debugLog('⚠️ STALLED (network?)', 'warn'));
-            bgMusicElement.addEventListener('waiting', () => debugLog('⏳ WAITING (buffering)', 'warn'));
-            bgMusicElement.addEventListener('seeking', () => {
-                debugLog('⏩ seeking at ' + bgMusicElement.currentTime.toFixed(2) + 's', 'warn');
-                // 의도하지 않은 seeking 방지
-                if (isMusicPlaying && bgMusicElement.currentTime < 1) {
-                    debugLog('⚠️ Suspicious seek detected, preventing...', 'error');
-                    // seeking을 취소할 수 없으므로 대신 재로드
-                    bgMusicElement.load();
-                    bgMusicElement.play().catch(err => debugLog('❌ Play after seek failed: ' + err.message, 'error'));
-                }
-            });
-            bgMusicElement.addEventListener('seeked', () => debugLog('✅ seeked'));
-        }
-
         function toggleMusic() {
             const bgMusic = document.getElementById('bgMusic');
             const bgMusicSrc = document.getElementById('bgMusicSrc');
