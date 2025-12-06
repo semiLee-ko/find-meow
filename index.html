@@ -11,6 +11,18 @@
 </head>
 
 <body>
+    <!-- 도움말 버튼 -->
+    <button class="help-button" id="helpButton" onclick="openInfoPopup()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <circle cx="12" cy="17" r="0.5" fill="currentColor"></circle>
+        </svg>
+    </button>
+
+    <!-- 고양이 발자국 애니메이션 컨테이너 -->
+    <div class="paw-prints-container" id="pawPrintsContainer"></div>
+
     <!-- 로고 -->
     <div class="logo"><img src="images/logo.png" alt="FindMeow Logo"></div>
 
@@ -24,8 +36,38 @@
         </div>
     </div>
 
-    <!-- 벽 장식 영역 (추후 오브젝트 추가 예정) -->
-    <div class="wall-decoration-area"></div>
+    <!-- 벽 장식 영역 - 사운드바 스피커 -->
+    <div class="wall-decoration-area">
+        <div class="soundbar">
+            <div class="soundbar-body">
+                <!-- 왼쪽 스피커 그릴 -->
+                <div class="speaker-grill left">
+                    <div class="grill-dots"></div>
+                </div>
+
+                <!-- 중앙 컨트롤 영역 -->
+                <div class="soundbar-center">
+                    <button class="power-button" id="powerButton" onclick="toggleMusic()">
+                        <div class="power-icon"></div>
+                    </button>
+                    <div class="led-indicator" id="ledIndicator"></div>
+                    <div class="brand-label">SOUND</div>
+                </div>
+
+                <!-- 오른쪽 스피커 그릴 -->
+                <div class="speaker-grill right">
+                    <div class="grill-dots"></div>
+                </div>
+            </div>
+
+            <!-- 사운드 웨이브 애니메이션 -->
+            <div class="sound-waves" id="soundWaves">
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+            </div>
+        </div>
+    </div>
 
     <!-- 초기 화면 (참여 인원 선택) -->
     <div class="initial-screen" id="initialScreen">
@@ -79,6 +121,90 @@
         <div id="resultList"></div>
         <button class="btn btn-primary" onclick="resetGame()">광고보고 다시도전</button>
     </div>
+
+    <!-- 게임 정보 팝업 -->
+    <div class="info-popup" id="infoPopup">
+        <div class="info-popup-content">
+            <!-- 닫기 버튼 -->
+            <button class="close-button" onclick="closeInfoPopup()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+
+            <!-- 등급 분류 -->
+            <div class="rating-section">
+                <div class="rating-badge">
+                    <div class="rating-icon">전체</div>
+                    <div class="rating-text">전체 이용가</div>
+                </div>
+                <p class="rating-description">본 게임은 자율 등급 분류에 따라 모든 연령이 이용 가능합니다.</p>
+            </div>
+
+            <!-- 게임 제목 -->
+            <h2 class="info-title">Find Meow</h2>
+            <p class="info-subtitle">TV 채널 속 숨은 고양이를 찾아라!</p>
+
+            <!-- 게임 룰 설명 -->
+            <div class="rules-section">
+                <h3>게임 방법</h3>
+
+                <div class="rule-item">
+                    <div class="rule-number">1</div>
+                    <div class="rule-content">
+                        <h4>참여 인원 선택</h4>
+                        <p>1명부터 10명까지 함께 플레이할 수 있습니다.</p>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <div class="rule-number">2</div>
+                    <div class="rule-content">
+                        <h4>이름 입력 & 채널 선택</h4>
+                        <p>플레이어 이름을 입력하고, 1~999번 중 원하는 채널 번호를 선택하세요.</p>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <div class="rule-number">3</div>
+                    <div class="rule-content">
+                        <h4>고양이 찾기</h4>
+                        <p>채널 변경 버튼을 누르면 화면에 이미지가 나타납니다. 화면을 스캔하며 숨어있는 <strong>고양이의 수</strong>를 자동으로 세어줍니다.</p>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <div class="rule-number">4</div>
+                    <div class="rule-content">
+                        <h4>승자 결정</h4>
+                        <p>모든 플레이어가 차례를 마치면, <strong>가장 많은 고양이를 찾은 사람</strong>이 승리합니다!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 팁 섹션 -->
+            <div class="tips-section">
+                <h3>고양이 카운트 조건</h3>
+                <ul>
+                    <li>이목구비(눈,코,입)가 인식되도록 잘 나온 경우만 카운트 됩니다.</li>
+                    <li>고양이 이외의 다른 동물들은 카운트 되지 않습니다.</li>
+                    <li>스캔 애니메이션이 끝날 때까지 기다려주세요!</li>
+                </ul>
+            </div>
+
+            <!-- 회사 정보 -->
+            <div class="company-info">
+                <p>© 2025 CODA Creative. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 배경 음악 -->
+    <audio id="bgMusic" loop>
+        <source id="bgMusicSrc" src="audio/background-music.mp3" type="audio/mpeg">
+    </audio>
 
     <script>
         // ==================== 설정 ====================
@@ -149,6 +275,176 @@
             }
         });
 
+        // ==================== 배경 음악 토글 ====================
+        let isMusicPlaying = false;
+
+        function toggleMusic() {
+            const bgMusic = document.getElementById('bgMusic');
+            const bgMusicSrc = document.getElementById('bgMusicSrc');
+            const powerButton = document.getElementById('powerButton');
+            const ledIndicator = document.getElementById('ledIndicator');
+            const soundWaves = document.getElementById('soundWaves');
+
+            if (isMusicPlaying) {
+                // 음악 끄기
+                bgMusic.pause();
+                powerButton.classList.remove('active');
+                ledIndicator.classList.remove('active');
+                soundWaves.classList.remove('active');
+                isMusicPlaying = false;
+            } else {
+                // 시각적 효과 먼저 활성화 (음악 파일 없어도 작동)
+                powerButton.classList.add('active');
+                ledIndicator.classList.add('active');
+                soundWaves.classList.add('active');
+                isMusicPlaying = true;
+
+                // 음악 재생 시도 (파일이 있으면 재생, 없으면 무시)
+                if (bgMusicSrc && bgMusicSrc.src) {
+                    bgMusic.play()
+                        .catch(error => {
+                            console.warn('음악 재생 실패 (정상 - 음악 파일이 없거나 브라우저 정책):', error);
+                            // 시각적 효과는 유지
+                        });
+                } else {
+                    console.info('배경 음악 파일이 설정되지 않았습니다. 시각적 효과만 표시됩니다.');
+                }
+            }
+        }
+
+        // ==================== 게임 정보 팝업 ====================
+        function openInfoPopup() {
+            const popup = document.getElementById('infoPopup');
+            popup.classList.add('active');
+            document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
+        }
+
+        function closeInfoPopup() {
+            const popup = document.getElementById('infoPopup');
+            popup.classList.remove('active');
+            document.body.style.overflow = ''; // 스크롤 복원
+        }
+
+        // ==================== 고양이 발자국 애니메이션 ====================
+        function createPawPrint(x, y, rotation = 0) {
+            // TV 영역 체크
+            const tvScreen = document.querySelector('.tv-screen');
+            if (tvScreen) {
+                const tvRect = tvScreen.getBoundingClientRect();
+                const pawSize = 50; // 발자국 크기
+
+                // 발자국이 TV 영역과 겹치는지 확인
+                if (x + pawSize > tvRect.left &&
+                    x < tvRect.right &&
+                    y + pawSize > tvRect.top &&
+                    y < tvRect.bottom) {
+                    return; // TV 영역이면 발자국 생성 안함
+                }
+            }
+
+            const container = document.getElementById('pawPrintsContainer');
+            const paw = document.createElement('div');
+            paw.className = 'paw-print';
+            paw.style.left = `${x}px`;
+            paw.style.top = `${y}px`;
+            paw.style.transform = `rotate(${rotation}deg) scaleX(-1)`;
+
+            container.appendChild(paw);
+
+            // 애니메이션 끝나면 제거
+            setTimeout(() => {
+                paw.remove();
+            }, 8000);
+        }
+
+        // ==================== 고양이 발자국 애니메이션 (연속 걷기) ====================
+        let catPosition = { x: 0, y: 0 };
+        let catAngle = 0;
+        let isWalking = false;
+
+        function initializeCatPosition() {
+            // 화면 중앙 근처에서 시작
+            catPosition.x = window.innerWidth / 2 + (Math.random() - 0.5) * 200;
+            catPosition.y = window.innerHeight / 2 + (Math.random() - 0.5) * 200;
+            catAngle = Math.random() * 360;
+        }
+
+        function getNextDirection() {
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            const margin = 100;
+
+            // 화면 가장자리에 가까우면 안쪽으로 방향 전환
+            if (catPosition.x < margin) {
+                catAngle = -45 + Math.random() * 90; // 오른쪽으로
+            } else if (catPosition.x > screenWidth - margin) {
+                catAngle = 135 + Math.random() * 90; // 왼쪽으로
+            } else if (catPosition.y < margin) {
+                catAngle = 45 + Math.random() * 90; // 아래쪽으로
+            } else if (catPosition.y > screenHeight - margin) {
+                catAngle = 225 + Math.random() * 90; // 위쪽으로
+            } else {
+                // 화면 중앙에서는 자유롭게 방향 변경 (-45도 ~ +45도)
+                catAngle += (Math.random() - 0.5) * 90;
+            }
+
+            // 각도 정규화 (0-360)
+            catAngle = ((catAngle % 360) + 360) % 360;
+        }
+
+        function createContinuousPawTrail() {
+            const pawCount = 8; // 고정된 발자국 개수
+            const stepSize = 45; // 발자국 간격
+            const stepWidth = 12; // 좌우 간격
+
+            // 새로운 방향 결정
+            getNextDirection();
+
+            const rad = (catAngle * Math.PI) / 180;
+
+            // 발자국 생성
+            for (let i = 0; i < pawCount; i++) {
+                setTimeout(() => {
+                    // 좌우 교대로 발자국 찍기
+                    const side = (i % 2 === 0) ? -1 : 1;
+                    const offsetX = Math.cos(rad) * stepSize * i + Math.sin(rad) * stepWidth * side;
+                    const offsetY = Math.sin(rad) * stepSize * i - Math.cos(rad) * stepWidth * side;
+
+                    const x = catPosition.x + offsetX;
+                    const y = catPosition.y + offsetY;
+
+                    // 발자국 회전 (이동 방향에 맞춤 + 90도)
+                    const rotation = catAngle + 90 + (Math.random() - 0.5) * 10;
+
+                    createPawPrint(x, y, rotation);
+
+                    // 마지막 발자국에서 위치 업데이트
+                    if (i === pawCount - 1) {
+                        catPosition.x = x;
+                        catPosition.y = y;
+                    }
+                }, i * 250); // 0.25초 간격으로 발자국 생성
+            }
+        }
+
+        // 연속적으로 발자국 생성
+        function startContinuousWalking() {
+            if (!isWalking) {
+                initializeCatPosition();
+                isWalking = true;
+            }
+
+            createContinuousPawTrail();
+
+            // 다음 경로 시작 (현재 경로가 끝나기 전에 시작)
+            setTimeout(startContinuousWalking, 1800); // 8개 * 250ms = 2000ms보다 조금 빨리
+        }
+
+        // 페이지 로드 후 발자국 애니메이션 시작
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(startContinuousWalking, 2000); // 2초 후 시작
+        });
+
         // ==================== 게임 시작 ====================
         function startGame() {
             totalPlayers = parseInt(document.getElementById('playerCount').value);
@@ -186,6 +482,11 @@
             const btn = window.event ? window.event.target : event.target;
             btn.classList.add('pressed');
             setTimeout(() => btn.classList.remove('pressed'), 200);
+
+            // 첫 자리에 0을 입력하지 못하도록 방지
+            if (currentChannel.length === 0 && num === '0') {
+                return;
+            }
 
             if (currentChannel.length < 3) {
                 currentChannel += num;

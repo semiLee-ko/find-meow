@@ -41,6 +41,533 @@ body {
     display: block;
 }
 
+.wall-decoration-area {
+    width: 100%;
+    max-width: min(500px, 70vh);
+    flex: 1;
+    min-height: 100px;
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 8px 0 20px 0;
+}
+
+/* ==================== 도움말 버튼 ==================== */
+.help-button {
+    position: fixed;
+    top: 50px;
+    left: 15px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(49, 130, 246, 0.9);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(49, 130, 246, 0.25);
+    transition: all 0.2s ease;
+    z-index: 1000;
+    padding: 0;
+}
+
+.help-button svg {
+    width: 18px;
+    height: 18px;
+    color: white;
+}
+
+.help-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(49, 130, 246, 0.35);
+    background: rgba(27, 100, 218, 0.95);
+}
+
+.help-button:active {
+    transform: scale(1.05);
+}
+
+/* ==================== 고양이 발자국 애니메이션 ==================== */
+.paw-prints-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: -1;
+    overflow: hidden;
+}
+
+.paw-print {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background-image: url('../images/paw-print.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0;
+    animation: pawFadeInOut 6s ease-in-out forwards;
+}
+
+@keyframes pawFadeInOut {
+    0% {
+        opacity: 0;
+    }
+
+    5% {
+        opacity: 0.4;
+    }
+
+    10% {
+        opacity: 0.4;
+    }
+
+    40% {
+        opacity: 0.4;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+/* ==================== 사운드바 스피커 ==================== */
+.soundbar {
+    width: 85%;
+    max-width: 400px;
+    position: relative;
+}
+
+.soundbar-body {
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 50%, #2a2a2a 100%);
+    border-radius: 10px;
+    padding: 8px 16px;
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.4),
+        inset 0 2px 4px rgba(255, 255, 255, 0.1),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    position: relative;
+    border: 1px solid #333;
+}
+
+.speaker-grill {
+    flex: 1;
+    height: 28px;
+    background: linear-gradient(90deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.8);
+}
+
+.grill-dots {
+    width: 100%;
+    height: 100%;
+    background-image: radial-gradient(circle, #333 1px, transparent 1px);
+    background-size: 6px 6px;
+    background-position: 0 0, 3px 3px;
+    opacity: 0.6;
+}
+
+.soundbar-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 0 12px;
+}
+
+.power-button {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
+    border: 1.5px solid #444;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow:
+        0 3px 6px rgba(0, 0, 0, 0.4),
+        inset 0 1px 2px rgba(255, 255, 255, 0.1);
+    position: relative;
+}
+
+.power-button:hover {
+    background: linear-gradient(135deg, #4a4a4a 0%, #3a3a3a 100%);
+    transform: translateY(-1px);
+    box-shadow:
+        0 6px 12px rgba(0, 0, 0, 0.5),
+        inset 0 1px 2px rgba(255, 255, 255, 0.15);
+}
+
+.power-button:active {
+    transform: translateY(0);
+    box-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.4),
+        inset 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.power-icon {
+    width: 12px;
+    height: 12px;
+    border: 1.5px solid #888;
+    border-radius: 50%;
+    position: relative;
+    transition: border-color 0.3s ease;
+}
+
+.power-icon::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1.5px;
+    height: 6px;
+    background: #888;
+    transition: background 0.3s ease;
+}
+
+.power-button.active .power-icon {
+    border-color: #4ade80;
+}
+
+.power-button.active .power-icon::before {
+    background: #4ade80;
+}
+
+.led-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #444;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.led-indicator.active {
+    background: #4ade80;
+    box-shadow:
+        0 0 8px rgba(74, 222, 128, 0.8),
+        0 0 16px rgba(74, 222, 128, 0.4),
+        inset 0 0 4px rgba(255, 255, 255, 0.6);
+    animation: ledPulse 2s ease-in-out infinite;
+}
+
+@keyframes ledPulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+.brand-label {
+    font-size: 0.55rem;
+    color: #666;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    margin-top: 1px;
+}
+
+.sound-waves {
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    gap: 6px;
+    align-items: flex-end;
+    height: 24px;
+}
+
+.sound-waves.active {
+    display: flex;
+}
+
+.wave {
+    width: 4px;
+    background: linear-gradient(to top, #4ade80, #22c55e);
+    border-radius: 2px;
+    animation: waveAnimation 0.8s ease-in-out infinite;
+}
+
+.wave:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.wave:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.wave:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes waveAnimation {
+
+    0%,
+    100% {
+        height: 8px;
+        opacity: 0.5;
+    }
+
+    50% {
+        height: 20px;
+        opacity: 1;
+    }
+}
+
+/* ==================== 게임 정보 팝업 ==================== */
+.info-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.info-popup.active {
+    display: flex;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.info-popup-content {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 32px 24px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: slideUpFade 0.4s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.close-button {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #f2f4f6;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.close-button svg {
+    width: 20px;
+    height: 20px;
+    color: #4e5968;
+}
+
+.close-button:hover {
+    background: #e5e8eb;
+    transform: rotate(90deg);
+}
+
+.rating-section {
+    text-align: center;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e5e8eb;
+}
+
+.rating-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    padding: 12px 20px;
+    border-radius: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.rating-icon {
+    background: white;
+    color: #059669;
+    font-weight: 800;
+    font-size: 1.1rem;
+    padding: 8px 12px;
+    border-radius: 10px;
+    line-height: 1;
+}
+
+.rating-text {
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.rating-description {
+    color: #6b7280;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.info-title {
+    color: #191f28;
+    font-size: 1.8rem;
+    font-weight: 800;
+    text-align: center;
+    margin: 0 0 8px 0;
+}
+
+.info-subtitle {
+    color: #6b7280;
+    font-size: 1rem;
+    text-align: center;
+    margin: 0 0 28px 0;
+}
+
+.rules-section {
+    margin-bottom: 24px;
+}
+
+.rules-section h3 {
+    color: #191f28;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0 0 16px 0;
+}
+
+.rule-item {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    align-items: flex-start;
+}
+
+.rule-number {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3182f6 0%, #1b64da 100%);
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rule-content {
+    flex: 1;
+}
+
+.rule-content h4 {
+    color: #191f28;
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0 0 6px 0;
+}
+
+.rule-content p {
+    color: #4e5968;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.rule-content strong {
+    color: #3182f6;
+    font-weight: 700;
+}
+
+.tips-section {
+    background: #f9fafb;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.tips-section h3 {
+    color: #191f28;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+}
+
+.tips-section ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.tips-section li {
+    color: #4e5968;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 8px;
+}
+
+.tips-section li:last-child {
+    margin-bottom: 0;
+}
+
+.company-info {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid #e5e8eb;
+}
+
+.company-info p {
+    color: #9ca3af;
+    font-size: 0.75rem;
+    margin: 0;
+    font-weight: 500;
+}
+
 .tv-container {
     width: 100%;
     /* 모바일 기본: 게임 정보 영역과 동일하게 맞춤 */
@@ -55,16 +582,6 @@ body {
     align-items: center;
     justify-content: flex-start;
     /* min-height: 0; 제거 */
-}
-
-.wall-decoration-area {
-    width: 100%;
-    /* 모바일 기본: TV와 동일한 제약 조건 적용 */
-    max-width: min(500px, 70vh);
-    flex: 1;
-    min-height: 100px;
-    /* 최소 높이 100px 고정 */
-    position: relative;
 }
 
 .tv-screen {
@@ -612,6 +1129,47 @@ body {
     .wall-decoration-area {
         /* 벽 장식 영역도 TV와 동일한 너비 규칙 적용 */
         max-width: min(800px, 70vh);
+    }
+
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+
+@media (min-width: 768px) {
+    .tv-container {
+        /* 태블릿/PC: TV는 세로 크기에 맞춰 줄어들 수 있음 */
+        max-width: min(800px, 70vh);
+    }
+
+    .wall-decoration-area {
+        /* 벽 장식 영역도 TV와 동일한 너비 규칙 적용 */
+        max-width: min(800px, 70vh);
+    }
+
+    .soundbar {
+        width: 90%;
+        max-width: 600px;
+    }
+
+    .soundbar-body {
+        padding: 10px 20px;
+    }
+
+    .speaker-grill {
+        height: 32px;
+    }
+
+    .power-button {
+        width: 32px;
+        height: 32px;
+    }
+
+    /* 도움말 버튼 위치 조정 - TV 좌측 정렬 */
+    .help-button {
+        left: calc((100vw - min(800px, 70vh)) / 2);
     }
 
     .initial-screen,
