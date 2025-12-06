@@ -656,6 +656,13 @@
             }
         });
 
+        // ==================== 화면 크기 변경 시 레이아웃 강제 업데이트 (Safe Area 대응) ====================
+        window.addEventListener('resize', () => {
+            document.body.style.display = 'none';
+            document.body.offsetHeight; // force reflow
+            document.body.style.display = 'flex';
+        });
+
         // ==================== 게임 시작 ====================
         function startGame() {
             // 게임 시작 사운드 재생
