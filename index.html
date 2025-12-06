@@ -251,7 +251,7 @@
 
 
     <!-- 배경 음악 -->
-    <audio id="bgMusic" loop preload="auto">
+    <audio id="bgMusic" loop preload="none">
         <source id="bgMusicSrc" src="audio/background-music.mp3" type="audio/mpeg">
     </audio>
 
@@ -556,7 +556,16 @@
 
             bgMusicElement.addEventListener('stalled', () => debugLog('⚠️ STALLED (network?)', 'warn'));
             bgMusicElement.addEventListener('waiting', () => debugLog('⏳ WAITING (buffering)', 'warn'));
-            bgMusicElement.addEventListener('seeking', () => debugLog('⏩ seeking'));
+            bgMusicElement.addEventListener('seeking', () => {
+                debugLog('⏩ seeking at ' + bgMusicElement.currentTime.toFixed(2) + 's', 'warn');
+                // 의도하지 않은 seeking 방지
+                if (isMusicPlaying && bgMusicElement.currentTime < 1) {
+                    debugLog('⚠️ Suspicious seek detected, preventing...', 'error');
+                    // seeking을 취소할 수 없으므로 대신 재로드
+                    bgMusicElement.load();
+                    bgMusicElement.play().catch(err => debugLog('❌ Play after seek failed: ' + err.message, 'error'));
+                }
+            });
             bgMusicElement.addEventListener('seeked', () => debugLog('✅ seeked'));
         }
 
