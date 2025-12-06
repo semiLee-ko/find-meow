@@ -506,6 +506,9 @@
                 const gameEndSound = document.getElementById('gameEndSound');
                 const failSound = document.getElementById('failSound');
 
+                // 배경음악이 재생 중이었는지 저장
+                window.wasMusicPlaying = !bgMusic.paused;
+
                 bgMusic.pause();
                 scanSound.pause();
                 gameStartSound.pause();
@@ -516,7 +519,14 @@
             } else {
                 // 앱이 포그라운드로 돌아왔을 때
                 console.log('앱 포그라운드 복귀');
-                // 배경음악은 사용자가 다시 켜야 함 (자동 재생 안 함)
+
+                // 배경음악이 재생 중이었다면 다시 재생
+                if (window.wasMusicPlaying && isMusicPlaying) {
+                    const bgMusic = document.getElementById('bgMusic');
+                    bgMusic.play()
+                        .then(() => console.log('배경음악 자동 재개'))
+                        .catch(error => console.warn('배경음악 재개 실패:', error));
+                }
             }
         });
 
