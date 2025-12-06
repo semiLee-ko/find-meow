@@ -694,8 +694,8 @@
                     detectedCount++;
                     updateCatCounter(detectedCount);
 
-                    // 고양이 발견 사운드 재생 (cloneNode로 여러 개 동시 재생 가능)
-                    const catSound = document.getElementById('catSound').cloneNode(true);
+                    // 고양이 발견 사운드 재생 (새 Audio 객체 생성으로 여러 개 동시 재생)
+                    const catSound = new Audio('audio/small_cat_sound.mp3');
                     catSound.play().catch(error => console.warn('고양이 사운드 재생 실패:', error));
 
                     // 플로팅 숫자 표시 제거됨
