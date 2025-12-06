@@ -19,7 +19,7 @@ body {
 
     /* Safe Area */
     padding-top: max(10px, env(safe-area-inset-top));
-    padding-bottom: max(20px, env(safe-area-inset-bottom));
+    padding-bottom: 0;
     /* 하단 네비게이션 영역 보호 */
     padding-left: max(20px, env(safe-area-inset-left));
     padding-right: max(20px, env(safe-area-inset-right));
@@ -1050,7 +1050,7 @@ body {
     display: none;
     z-index: 100;
     margin-top: auto;
-    margin-bottom: env(safe-area-inset-bottom, 0);
+    margin-bottom: 0;
 }
 
 .remote-control.slide-in {
