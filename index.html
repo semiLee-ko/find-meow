@@ -250,7 +250,7 @@
     </div>
 
     <!-- 배경 음악 -->
-    <audio id="bgMusic" loop>
+    <audio id="bgMusic">
         <source id="bgMusicSrc" src="audio/background-music.mp3" type="audio/mpeg">
     </audio>
 
@@ -442,6 +442,25 @@
         // ==================== 배경 음악 토글 ====================
         let isMusicPlaying = false;
 
+        // ==================== 배경 음악 루프 안전 처리 ====================
+        const bgMusic = document.getElementById('bgMusic');
+        const bgMusicSrc = document.getElementById('bgMusicSrc');
+
+        if (bgMusic) {
+            // loop 속성 대신 JS로 루프 처리
+            bgMusic.addEventListener('ended', () => {
+                if (isMusicPlaying) {
+                    // 끊김 방지용으로 살짝 여유를 두고 다시 시작해도 되고,
+                    // 그냥 0으로 돌려도 됨
+                    bgMusic.currentTime = 0;
+                    bgMusic.play().catch(err => {
+                        console.warn('배경음 루프 재생 실패:', err);
+                    });
+                }
+            });
+        }
+
+
         function toggleMusic() {
             const bgMusic = document.getElementById('bgMusic');
             const bgMusicSrc = document.getElementById('bgMusicSrc');
@@ -624,18 +643,17 @@
 
         // ==================== 앱 생명주기 관리 (백그라운드/포그라운드) ====================
         document.addEventListener('visibilitychange', () => {
+            const bgMusic = document.getElementById('bgMusic');
+            const scanSound = document.getElementById('scanSound');
+            const gameStartSound = document.getElementById('gameStartSound');
+            const gameEndSound = document.getElementById('gameEndSound');
+            const failSound = document.getElementById('failSound');
+
             if (document.hidden) {
                 // 앱이 백그라운드로 갔을 때 - 모든 오디오 일시정지
-                const bgMusic = document.getElementById('bgMusic');
-                const scanSound = document.getElementById('scanSound');
-                const gameStartSound = document.getElementById('gameStartSound');
-                const gameEndSound = document.getElementById('gameEndSound');
-                const failSound = document.getElementById('failSound');
+                window.wasMusicPlaying = bgMusic && !bgMusic.paused;
 
-                // 배경음악이 재생 중이었는지 저장
-                window.wasMusicPlaying = !bgMusic.paused;
-
-                bgMusic.pause();
+                if (bgMusic) bgMusic.pause();
                 scanSound.pause();
                 gameStartSound.pause();
                 gameEndSound.pause();
@@ -643,15 +661,20 @@
 
                 console.log('앱 백그라운드 - 모든 오디오 일시정지');
             } else {
-                // 앱이 포그라운드로 돌아왔을 때
                 console.log('앱 포그라운드 복귀');
 
-                // 배경음악이 재생 중이었다면 다시 재생
-                if (window.wasMusicPlaying && isMusicPlaying) {
-                    const bgMusic = document.getElementById('bgMusic');
-                    bgMusic.play()
-                        .then(() => console.log('배경음악 자동 재개'))
-                        .catch(error => console.warn('배경음악 재개 실패:', error));
+                // 배경음악이 재생 중이었다면 "깨끗하게" 재시작
+                if (window.wasMusicPlaying && isMusicPlaying && bgMusic) {
+                    try {
+                        // 버퍼 꼬임 방지를 위해 한 번 리셋하고 다시 시작
+                        bgMusic.pause();
+                        bgMusic.currentTime = 0;   // 복귀할 때 항상 처음부터 재생 (이게 제일 안정적)
+                        bgMusic.play()
+                            .then(() => console.log('배경음악 재시작'))
+                            .catch(error => console.warn('배경음악 재시작 실패:', error));
+                    } catch (e) {
+                        console.warn('배경음악 재시작 중 오류:', e);
+                    }
                 }
             }
         });

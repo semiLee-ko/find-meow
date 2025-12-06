@@ -33,7 +33,7 @@ body {
 
     /* 기본 20px + safe-area(inset-bottom) 을 더해주는 방식으로 변경 */
     padding-bottom: 20px;
-    padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
+    padding-bottom: env(safe-area-inset-bottom);
 
     padding-left: max(20px, env(safe-area-inset-left));
     padding-right: max(20px, env(safe-area-inset-right));
