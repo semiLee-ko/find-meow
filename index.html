@@ -642,6 +642,7 @@
         });
 
         // ==================== 앱 생명주기 관리 (백그라운드/포그라운드) ====================
+        let resumeTimer = null;
         document.addEventListener('visibilitychange', () => {
             const bgMusic = document.getElementById('bgMusic');
             const scanSound = document.getElementById('scanSound');
@@ -649,11 +650,18 @@
             const gameEndSound = document.getElementById('gameEndSound');
             const failSound = document.getElementById('failSound');
 
-            if (document.hidden) {
-                // 앱이 백그라운드로 갔을 때 - 모든 오디오 일시정지
-                window.wasMusicPlaying = bgMusic && !bgMusic.paused;
+            if (!bgMusic) return;
 
-                if (bgMusic) bgMusic.pause();
+            if (document.hidden) {
+                if (resumeTimer) {
+                    clearTimeout(resumeTimer);
+                    resumeTimer = null;
+                }
+
+                // 앱이 백그라운드로 갔을 때 - 모든 오디오 일시정지
+                window.wasMusicPlaying = !bgMusic.paused;
+                bgMusic.pause();
+
                 scanSound.pause();
                 gameStartSound.pause();
                 gameEndSound.pause();
@@ -664,17 +672,18 @@
                 console.log('앱 포그라운드 복귀');
 
                 // 배경음악이 재생 중이었다면 "깨끗하게" 재시작
-                if (window.wasMusicPlaying && isMusicPlaying && bgMusic) {
-                    try {
-                        // 버퍼 꼬임 방지를 위해 한 번 리셋하고 다시 시작
-                        bgMusic.pause();
-                        bgMusic.currentTime = 0;   // 복귀할 때 항상 처음부터 재생 (이게 제일 안정적)
-                        bgMusic.play()
-                            .then(() => console.log('배경음악 재시작'))
-                            .catch(error => console.warn('배경음악 재시작 실패:', error));
-                    } catch (e) {
-                        console.warn('배경음악 재시작 중 오류:', e);
-                    }
+                if (window.wasMusicPlaying && isMusicPlaying) {
+                    // 200ms 정도 기다렸다가 재생 시도 (레이아웃/뷰포트 안정화 후)
+                    resumeTimer = setTimeout(() => {
+                        try {
+                            bgMusic.currentTime = 0; // 혹은 기존 위치 유지도 가능
+                            bgMusic.play()
+                                .then(() => console.log('배경음 자동 재개'))
+                                .catch(err => console.warn('배경음 자동 재개 실패:', err));
+                        } catch (e) {
+                            console.warn('배경음 자동 재개 중 오류:', e);
+                        }
+                    }, 200);
                 }
             }
         });
