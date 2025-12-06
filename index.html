@@ -496,6 +496,30 @@
             setTimeout(startContinuousWalking, 2000); // 2초 후 시작
         });
 
+        // ==================== 앱 생명주기 관리 (백그라운드/포그라운드) ====================
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                // 앱이 백그라운드로 갔을 때 - 모든 오디오 일시정지
+                const bgMusic = document.getElementById('bgMusic');
+                const scanSound = document.getElementById('scanSound');
+                const gameStartSound = document.getElementById('gameStartSound');
+                const gameEndSound = document.getElementById('gameEndSound');
+                const failSound = document.getElementById('failSound');
+
+                bgMusic.pause();
+                scanSound.pause();
+                gameStartSound.pause();
+                gameEndSound.pause();
+                failSound.pause();
+
+                console.log('앱 백그라운드 - 모든 오디오 일시정지');
+            } else {
+                // 앱이 포그라운드로 돌아왔을 때
+                console.log('앱 포그라운드 복귀');
+                // 배경음악은 사용자가 다시 켜야 함 (자동 재생 안 함)
+            }
+        });
+
         // ==================== 게임 시작 ====================
         function startGame() {
             // 게임 시작 사운드 재생
