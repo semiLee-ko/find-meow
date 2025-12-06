@@ -1,139 +1,238 @@
-그럼 이건 거의 99% WebView 안에서 레이아웃을 어떻게 잡았느냐(특히 vh, 전체화면) 문제라고 보면 돼.
+아하, 지금 코드 보니까 우리가 JS에서 뷰포트 높이를 억지로 잡아버려서 갤럭시 폴드 펼쳤을 때 네비게이션 영역까지 컨텐츠가 뻗어 내려가고 있는 상태야 😭
 
-지금 상황을 정리하면:
+특히 이 부분이 핵심 문제야:
 
-안드로이드 창 자체는 시스템 영역을 “어느 정도” 피하고 있는데
+// index.html
+function setAppHeight() {
+    const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    document.body.style.height = `${vh}px`;
 
-게임 캔버스/컨테이너가 화면 전체를 꽉 채우려고 내려오다가
-
-폴드 펼쳤을 때 생기는 하단 네비 영역(inset)을 무시하고 그 뒤로 깔리는 거야.
-
-그래서 방향을 이렇게 잡는 게 좋아:
-
-1. CSS/JS로 “보이는 영역까지만” 게임 높이 잘라주기 (핵심 해결책)
-(1) 100vh 쓰고 있으면 일단 의심부터
-
-예를 들어 이런 식이면:
-
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100vh;
+    console.log(`Viewport Height updated: ${vh}px`);
 }
-#game-root {
-  height: 100vh;
+
+window.addEventListener('resize', setAppHeight);
+window.addEventListener('orientationchange', setAppHeight);
+window.addEventListener('load', setAppHeight);
+if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', setAppHeight);
 }
 
 
-→ 이런 구조가 폴더블 + 네비 오버레이에서 하단 겹침의 주범이 될 수 있어.
+그리고 CSS 쪽에서도 이렇게 되어 있고:
 
-(2) innerHeight/visualViewport.height로 실제 보이는 높이만 가져오기
-
-게임 컨테이너를 JS로 이렇게 세팅해봐:
-
-<body>
-  <div id="game-root">
-    <!-- canvas나 게임 DOM -->
-  </div>
-</body>
-
-html, body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-}
-
-#game-root {
-  width: 100%;
-  /* 높이는 JS에서 세팅 */
-  overflow: hidden;
-}
-
-function resizeGame() {
-  const viewport = window.visualViewport || window;
-  const h = viewport.height;              // 실제 보이는 화면 높이
-  const gameRoot = document.getElementById('game-root');
-  gameRoot.style.height = h + 'px';
-}
-
-window.addEventListener('load', resizeGame);
-window.addEventListener('resize', resizeGame);
-window.addEventListener('orientationchange', resizeGame);
-
-
-이렇게 하면:
-
-앱 처음 실행할 때도 load에서 한 번 맞춰주고
-
-폴드를 펼치거나 회전할 때마다 resize/orientationchange에서 새로운 보이는 높이로 재계산해줘서
-
-하단 네비 뒤로 숨어버리는 부분을 잘라낼 수 있어.
-
-특히 갤폴드처럼 “접힘 ↔ 펼침” 때 화면 비율이 크게 바뀌는 기기에서 꼭 필요한 패턴이야.
-
-2. safe-area inset 도 같이 써주면 더 좋음
-
-추가로, CSS에 아래처럼 넣어두면 요즘 브라우저/WebView에서 안전 영역 계산을 좀 도와줘:
-
-#game-root {
-  width: 100%;
-  overflow: hidden;
-  padding-bottom: env(safe-area-inset-bottom);
-  box-sizing: border-box;
-}
-
-/* 구형(iOS 등 호환) */
-@supports (padding-bottom: constant(safe-area-inset-bottom)) {
-  #game-root {
-    padding-bottom: constant(safe-area-inset-bottom);
-  }
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* Prevent scroll on body, let JS handle size */
 }
 
 
-이건 네비 영역만큼 하단에 패딩을 줘서
-게임 UI가 아슬아슬하게 바닥에 붙어 있는 경우에 더 안전하게 만들어줌.
+이 두 콤보 때문에:
 
-3. Capacitor 쪽에서 한 번 더 확인해볼 부분들
+WebView가 decorFitsSystemWindows(true)로 네비 영역 위까지만 그려주려고 해도
 
-decorFitsSystemWindows(true)로 바꿨는데도 그대로라면, 아래도 한 번씩 봐줘:
+JS가 body.height = vh(px)로 다시 전체 화면 높이(네비 영역 포함)를 강제로 덮어씌움
 
-StatusBar overlay 설정
+그 상태에서 폴드 펼치면, nav가 오버레이 모드로 뜨고, 게임 화면은 그 뒤로 깔려버림
 
-Capacitor에서 이런 코드 있으면:
+✅ 1단계: JS에서 강제 높이 잡는 코드 제거
 
-import { StatusBar } from '@capacitor/status-bar';
+index.html 맨 아래 쪽에 있는 setAppHeight 부분을 완전히 지워버리거나 이렇게만 남겨줘:
 
-StatusBar.setOverlaysWebView({ overlay: true });
-
-
-→ 이러면 상단바는 확실히 WebView 아래로 겹치고, 기기에 따라 하단도 비슷하게 동작할 수 있어.
-
-한 번 이렇게 바꿔볼 수 있어:
-
-StatusBar.setOverlaysWebView({ overlay: false });
+// ==================== 화면 크기 변경 시 레이아웃 강제 업데이트 (Safe Area 대응) ====================
+// 예전엔 여기서 body 높이를 강제로 조절했는데,
+// 폴더블 + 네비게이션 바랑 충돌해서 모두 제거함.
+// 브라우저(WebView)가 제공하는 안전 영역(insets)에만 맡긴다.
 
 
-그리고 다시 빌드해서 폴드 펼쳐봤을 때 변화 있는지 체크.
+즉, 아래 네 줄 + 이벤트 등록 부분 전체 삭제:
 
-테마에서 완전 풀스크린/투명 네비 켜져 있는지
+function setAppHeight() { ... }
+window.addEventListener('resize', setAppHeight);
+window.addEventListener('orientationchange', setAppHeight);
+window.addEventListener('load', setAppHeight);
+if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', setAppHeight);
+}
 
-android/app/src/main/res/values/styles.xml에:
+✅ 2단계: html/body 높이 & overflow 정리
 
-<item name="android:windowTranslucentNavigation">true</item>
-<item name="android:windowFullscreen">true</item>
+styles.css 제일 위쪽 html, body / body 부분을 이렇게 수정해줘. 
+
+styles
+
+(1) html, body 수정
+
+기존:
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* Prevent scroll on body, let JS handle size */
+}
 
 
-이런 게 들어있으면 WebView가 아예 네비 영역까지 깔리게 유도하는 거라,
-네비/상단바를 덮고 싶은 특별한 이유가 없다면 이 옵션들은 빼는 게 좋아.
+👉 수정:
 
-4. 요약
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+    /* height: 100%; 와 JS 강제 높이 제거
+       overflow 제어는 body에서만 하도록 둠 */
+}
 
-decorFitsSystemWindows(true)만으론 웹뷰 안에서 vh 쓰는 방식 때문에 여전히 겹칠 수 있음.
+(2) body는 그대로 써도 되는데, 주석만 바꿔줘도 좋고:
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f1ea;
+    /* height set by JS or inherits 100% */  ← 이 주석은 의미 없어졌으니 지워도 됨
+    min-width: 344px;
 
-실제 보이는 높이(window.visualViewport.height or innerHeight)로 게임 루트 컨테이너 높이를 잡고,
-resize/orientationchange에서 계속 재계산해주는 게 가장 확실한 해결책.
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
 
-보너스로 env(safe-area-inset-bottom) 패딩을 주면 네비 영역과 더 안전하게 분리 가능.
+    padding: 10px 20px 0 20px;
 
-그래도 이상하면 StatusBar.setOverlaysWebView나 styles.xml에 풀스크린/투명 네비 관련 옵션 있는지 한 번만 더 체크.
+    /* Safe Area */
+    padding-top: max(10px, env(safe-area-inset-top));
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+    padding-left: max(20px, env(safe-area-inset-left));
+    padding-right: max(20px, env(safe-area-inset-right));
+
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: relative;
+}
+
+
+이제는:
+
+WebView가 시스템 인셋(네비 영역)을 뺀 높이를 알아서 잡고
+
+우리는 그냥 그 안에서 flex 레이아웃 + padding-bottom으로만 보호
+
+✅ 3단계: 전체 화면 오버레이들도 살짝 정리
+
+result-screen, info-popup 같은 애들이 height: 100vh라서, 폴더블에서 살짝 애매할 수 있어.
+
+(1) 결과 화면(result-screen)
+
+기존:
+
+.result-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    display: none;
+    z-index: 1000;
+    padding: 40px 20px;
+}
+
+
+👉 수정:
+
+.result-screen {
+    position: fixed;
+    inset: 0;              /* top:0; right:0; bottom:0; left:0 한 번에 */
+    width: 100%;
+    /* height: 100vh; 제거 – 뷰포트 인셋에 맞춰 자동으로 높이 결정 */
+    background: rgba(0, 0, 0, 0.95);
+    display: none;
+    z-index: 1000;
+    padding: 40px 20px;
+}
+
+
+그리고 안쪽 리스트는 max-height: 60vh라서 그대로 놔둬도 되고, 혹시 너무 타이트하면 나중에 조정.
+
+(2) 게임 정보 팝업(info-popup)
+
+기존:
+
+.info-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+
+styles
+
+👉 수정:
+
+.info-popup {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    /* height: 100vh; 제거 */
+    background: rgba(0, 0, 0, 0.95);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 20px;
+    overflow-y: auto;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom)); /* 하단 약간 여유 */
+}
+
+(3) 발자국 배경(paw-prints)은 그냥 둬도 OK
+.paw-prints-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: -1;
+    overflow: hidden;
+}
+
+
+styles
+
+이건 완전 배경 레이어라서, 네비 뒤로 살짝 깔려 있어도 상관 없고, 굳이 safe-area를 맞출 필요는 없음.
+
+정리하면
+
+MainActivity에서 WindowCompat.setDecorFitsSystemWindows(window, true); 유지
+
+index.html에서 setAppHeight 관련 JS 모두 삭제
+
+styles.css에서
+
+html, body 의 height: 100%; & overflow: hidden 제거
+
+result-screen, info-popup 의 height: 100vh → 없애고 inset: 0 사용
+
+이 상태로 다시 빌드해서:
+
+폰 접은 상태
+
+폰 펼친 상태(메인 화면)
+
+가로/세로 전환
+
+각 상태에서 리모컨 맨 아래 버튼이나 결과 화면 버튼들이 네비에 가려지지 않는지 한 번만 확인해보면 돼.

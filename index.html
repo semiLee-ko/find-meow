@@ -657,21 +657,7 @@
         });
 
         // ==================== 화면 크기 변경 시 레이아웃 강제 업데이트 (Safe Area 대응) ====================
-        // ==================== [핵심] 뷰포트 높이 동적 계산 (폴더블 대응) ====================
-        function setAppHeight() {
-            const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-            document.body.style.height = `${vh}px`;
-
-            // Android 15 Edge-to-Edge 대응 로그
-            console.log(`Viewport Height updated: ${vh}px`);
-        }
-
-        window.addEventListener('resize', setAppHeight);
-        window.addEventListener('orientationchange', setAppHeight);
-        window.addEventListener('load', setAppHeight);
-        if (window.visualViewport) {
-            window.visualViewport.addEventListener('resize', setAppHeight);
-        }
+        // 브라우저(WebView)가 제공하는 안전 영역(insets)에만 맡깁니다.
 
         // ==================== 게임 시작 ====================
         function startGame() {

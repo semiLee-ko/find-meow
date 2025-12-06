@@ -2,20 +2,23 @@
     box-sizing: border-box;
 }
 
-html,
-body {
+html {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden;
-    /* Prevent scroll on body, let JS handle size */
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
 }
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f4f1ea;
-    /* height set by JS or inherits 100% */
     min-width: 344px;
 
     display: flex;
@@ -437,10 +440,10 @@ body {
 /* ==================== 게임 정보 팝업 ==================== */
 .info-popup {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
+    inset: 0;
+    width: 100%;
+    /* height: 100vh; removed */
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
     background: rgba(0, 0, 0, 0.95);
     display: none;
     align-items: center;
@@ -1548,4 +1551,23 @@ body {
 
 .hidden {
     display: none !important;
+}
+
+/* Fix for Result Screen */
+.result-screen {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    /* height: 100vh; removed */
+    background: rgba(0, 0, 0, 0.95);
+    display: none;
+    z-index: 1000;
+    padding: 40px 20px;
+    padding-bottom: calc(40px + env(safe-area-inset-bottom));
+}
+
+.result-screen.active {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
