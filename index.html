@@ -656,24 +656,6 @@
             }
         });
 
-        // ==================== 화면 크기 변경 처리 (폴드폰 대응) ====================
-        let resizeTimeout;
-        window.addEventListener('resize', () => {
-            // 리사이즈 이벤트가 연속으로 발생하므로 디바운싱 처리
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => {
-                // 배경음악이 재생 중이라면 현재 시간 저장 후 재개
-                const bgMusic = document.getElementById('bgMusic');
-                if (!bgMusic.paused) {
-                    const currentTime = bgMusic.currentTime;
-                    // 오디오 컨텍스트 재개 (일부 브라우저에서 필요)
-                    bgMusic.load();
-                    bgMusic.currentTime = currentTime;
-                    bgMusic.play().catch(error => console.warn('리사이즈 후 음악 재개 실패:', error));
-                }
-            }, 300); // 300ms 디바운싱
-        });
-
         // ==================== 게임 시작 ====================
         function startGame() {
             // 게임 시작 사운드 재생
