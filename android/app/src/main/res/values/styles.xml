@@ -13,8 +13,6 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
-        <!-- Layout adjustment for system bars -->
-        <item name="android:fitsSystemWindows">true</item>
     </style>
 
 

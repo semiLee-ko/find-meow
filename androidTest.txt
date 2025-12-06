@@ -1,0 +1,139 @@
+그럼 이건 거의 99% WebView 안에서 레이아웃을 어떻게 잡았느냐(특히 vh, 전체화면) 문제라고 보면 돼.
+
+지금 상황을 정리하면:
+
+안드로이드 창 자체는 시스템 영역을 “어느 정도” 피하고 있는데
+
+게임 캔버스/컨테이너가 화면 전체를 꽉 채우려고 내려오다가
+
+폴드 펼쳤을 때 생기는 하단 네비 영역(inset)을 무시하고 그 뒤로 깔리는 거야.
+
+그래서 방향을 이렇게 잡는 게 좋아:
+
+1. CSS/JS로 “보이는 영역까지만” 게임 높이 잘라주기 (핵심 해결책)
+(1) 100vh 쓰고 있으면 일단 의심부터
+
+예를 들어 이런 식이면:
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+}
+#game-root {
+  height: 100vh;
+}
+
+
+→ 이런 구조가 폴더블 + 네비 오버레이에서 하단 겹침의 주범이 될 수 있어.
+
+(2) innerHeight/visualViewport.height로 실제 보이는 높이만 가져오기
+
+게임 컨테이너를 JS로 이렇게 세팅해봐:
+
+<body>
+  <div id="game-root">
+    <!-- canvas나 게임 DOM -->
+  </div>
+</body>
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#game-root {
+  width: 100%;
+  /* 높이는 JS에서 세팅 */
+  overflow: hidden;
+}
+
+function resizeGame() {
+  const viewport = window.visualViewport || window;
+  const h = viewport.height;              // 실제 보이는 화면 높이
+  const gameRoot = document.getElementById('game-root');
+  gameRoot.style.height = h + 'px';
+}
+
+window.addEventListener('load', resizeGame);
+window.addEventListener('resize', resizeGame);
+window.addEventListener('orientationchange', resizeGame);
+
+
+이렇게 하면:
+
+앱 처음 실행할 때도 load에서 한 번 맞춰주고
+
+폴드를 펼치거나 회전할 때마다 resize/orientationchange에서 새로운 보이는 높이로 재계산해줘서
+
+하단 네비 뒤로 숨어버리는 부분을 잘라낼 수 있어.
+
+특히 갤폴드처럼 “접힘 ↔ 펼침” 때 화면 비율이 크게 바뀌는 기기에서 꼭 필요한 패턴이야.
+
+2. safe-area inset 도 같이 써주면 더 좋음
+
+추가로, CSS에 아래처럼 넣어두면 요즘 브라우저/WebView에서 안전 영역 계산을 좀 도와줘:
+
+#game-root {
+  width: 100%;
+  overflow: hidden;
+  padding-bottom: env(safe-area-inset-bottom);
+  box-sizing: border-box;
+}
+
+/* 구형(iOS 등 호환) */
+@supports (padding-bottom: constant(safe-area-inset-bottom)) {
+  #game-root {
+    padding-bottom: constant(safe-area-inset-bottom);
+  }
+}
+
+
+이건 네비 영역만큼 하단에 패딩을 줘서
+게임 UI가 아슬아슬하게 바닥에 붙어 있는 경우에 더 안전하게 만들어줌.
+
+3. Capacitor 쪽에서 한 번 더 확인해볼 부분들
+
+decorFitsSystemWindows(true)로 바꿨는데도 그대로라면, 아래도 한 번씩 봐줘:
+
+StatusBar overlay 설정
+
+Capacitor에서 이런 코드 있으면:
+
+import { StatusBar } from '@capacitor/status-bar';
+
+StatusBar.setOverlaysWebView({ overlay: true });
+
+
+→ 이러면 상단바는 확실히 WebView 아래로 겹치고, 기기에 따라 하단도 비슷하게 동작할 수 있어.
+
+한 번 이렇게 바꿔볼 수 있어:
+
+StatusBar.setOverlaysWebView({ overlay: false });
+
+
+그리고 다시 빌드해서 폴드 펼쳐봤을 때 변화 있는지 체크.
+
+테마에서 완전 풀스크린/투명 네비 켜져 있는지
+
+android/app/src/main/res/values/styles.xml에:
+
+<item name="android:windowTranslucentNavigation">true</item>
+<item name="android:windowFullscreen">true</item>
+
+
+이런 게 들어있으면 WebView가 아예 네비 영역까지 깔리게 유도하는 거라,
+네비/상단바를 덮고 싶은 특별한 이유가 없다면 이 옵션들은 빼는 게 좋아.
+
+4. 요약
+
+decorFitsSystemWindows(true)만으론 웹뷰 안에서 vh 쓰는 방식 때문에 여전히 겹칠 수 있음.
+
+실제 보이는 높이(window.visualViewport.height or innerHeight)로 게임 루트 컨테이너 높이를 잡고,
+resize/orientationchange에서 계속 재계산해주는 게 가장 확실한 해결책.
+
+보너스로 env(safe-area-inset-bottom) 패딩을 주면 네비 영역과 더 안전하게 분리 가능.
+
+그래도 이상하면 StatusBar.setOverlaysWebView나 styles.xml에 풀스크린/투명 네비 관련 옵션 있는지 한 번만 더 체크.
