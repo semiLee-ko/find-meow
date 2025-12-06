@@ -104,6 +104,54 @@ body {
     transform: scale(1.05);
 }
 
+/* ==================== 전체 사운드 토글 버튼 ==================== */
+.audio-toggle-button {
+    position: fixed;
+    top: 50px;
+    left: 55px;
+    /* 물음표 버튼(15px) + 버튼 크기(32px) + 간격(8px) */
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(49, 130, 246, 0.9);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(49, 130, 246, 0.25);
+    transition: all 0.2s ease;
+    z-index: 1000;
+    padding: 0;
+}
+
+.audio-toggle-button svg {
+    width: 18px;
+    height: 18px;
+    color: white;
+}
+
+.audio-toggle-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(49, 130, 246, 0.35);
+    background: rgba(27, 100, 218, 0.95);
+}
+
+.audio-toggle-button:active {
+    transform: scale(1.05);
+}
+
+.audio-toggle-button.disabled {
+    background: rgba(127, 140, 141, 0.9);
+    box-shadow: 0 2px 8px rgba(127, 140, 141, 0.25);
+}
+
+.audio-toggle-button.disabled:hover {
+    background: rgba(95, 106, 107, 0.95);
+    box-shadow: 0 4px 12px rgba(127, 140, 141, 0.35);
+}
+
+
 /* ==================== 고양이 발자국 애니메이션 ==================== */
 .paw-prints-container {
     position: fixed;
@@ -1391,6 +1439,11 @@ body {
     /* 도움말 버튼 위치 조정 - TV 좌측 정렬 */
     .help-button {
         left: calc((100vw - min(800px, 70vh)) / 2);
+    }
+
+    /* 사운드 토글 버튼 위치 조정 - 도움말 버튼 옆 */
+    .audio-toggle-button {
+        left: calc((100vw - min(800px, 70vh)) / 2 + 40px);
     }
 
     .initial-screen,

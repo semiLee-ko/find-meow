@@ -20,6 +20,22 @@
         </svg>
     </button>
 
+    <!-- 전체 사운드 토글 버튼 -->
+    <button class="audio-toggle-button disabled" id="audioToggleButton" onclick="toggleAllAudio()">
+        <svg id="audioOnIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+        </svg>
+        <svg id="audioOffIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+        </svg>
+    </button>
+
     <!-- 고양이 발자국 애니메이션 컨테이너 -->
     <div class="paw-prints-container" id="pawPrintsContainer"></div>
 
@@ -440,6 +456,59 @@
             }
         });
 
+        // ==================== 전체 사운드 제어 ====================
+        let isAudioEnabled = false; // 기본값: 꺼짐
+
+        function toggleAllAudio() {
+            isAudioEnabled = !isAudioEnabled;
+
+            const audioOnIcon = document.getElementById('audioOnIcon');
+            const audioOffIcon = document.getElementById('audioOffIcon');
+            const audioToggleButton = document.getElementById('audioToggleButton');
+
+            if (isAudioEnabled) {
+                // 사운드 켜기
+                audioOnIcon.style.display = 'block';
+                audioOffIcon.style.display = 'none';
+                audioToggleButton.classList.remove('disabled');
+                console.log('🔊 All audio enabled');
+            } else {
+                // 사운드 끄기 - 모든 오디오 정지
+                audioOnIcon.style.display = 'none';
+                audioOffIcon.style.display = 'block';
+                audioToggleButton.classList.add('disabled');
+
+                // 배경음악이 재생 중이면 정지
+                const bgMusic = document.getElementById('bgMusic');
+                if (bgMusic && isMusicPlaying) {
+                    bgMusic.pause();
+                    const powerButton = document.getElementById('powerButton');
+                    const ledIndicator = document.getElementById('ledIndicator');
+                    const soundWaves = document.getElementById('soundWaves');
+                    powerButton.classList.remove('active');
+                    ledIndicator.classList.remove('active');
+                    soundWaves.classList.remove('active');
+                    isMusicPlaying = false;
+                }
+
+                console.log('🔇 All audio disabled');
+            }
+        }
+
+        // ==================== 사운드 재생 헬퍼 함수 ====================
+        function playSound(audioElement) {
+            if (!isAudioEnabled) {
+                console.log('⚠️ Audio is disabled');
+                return Promise.resolve();
+            }
+            if (audioElement && typeof audioElement.play === 'function') {
+                return audioElement.play().catch(err => {
+                    console.warn('Audio play failed:', err);
+                });
+            }
+            return Promise.resolve();
+        }
+
         // ==================== 배경 음악 토글 ====================
         let isMusicPlaying = false;
 
@@ -461,6 +530,12 @@
                 soundWaves.classList.remove('active');
                 isMusicPlaying = false;
             } else {
+                // 전체 사운드가 꺼져있으면 재생 불가
+                if (!isAudioEnabled) {
+                    console.log('⚠️ Audio is disabled. Enable audio first.');
+                    return;
+                }
+
                 // 시각적 효과 먼저 활성화 (음악 파일 없어도 작동)
                 powerButton.classList.add('active');
                 ledIndicator.classList.add('active');
@@ -668,7 +743,7 @@
             // 게임 시작 사운드 재생
             const gameStartSound = document.getElementById('gameStartSound');
             gameStartSound.currentTime = 0;
-            gameStartSound.play().catch(error => console.warn('게임 시작 사운드 재생 실패:', error));
+            playSound(gameStartSound);
 
             totalPlayers = parseInt(document.getElementById('playerCount').value);
             currentPlayerIndex = 0;
@@ -841,7 +916,7 @@
             // 스캔 사운드 재생
             const scanSound = document.getElementById('scanSound');
             scanSound.currentTime = 0;
-            scanSound.play().catch(error => console.warn('스캔 사운드 재생 실패:', error));
+            playSound(scanSound);
 
             let detectedCount = 0;
 
@@ -864,7 +939,7 @@
                     // 고양이 발견 사운드 재생 (오디오 풀 사용)
                     const catSound = catSoundPool[currentCatSoundIndex];
                     catSound.currentTime = 0;
-                    catSound.play().catch(error => console.warn('고양이 사운드 재생 실패:', error));
+                    playSound(catSound);
 
                     // 다음 오디오 요소로 순환
                     currentCatSoundIndex = (currentCatSoundIndex + 1) % catSoundPool.length;
@@ -886,7 +961,7 @@
                 if (detectedCount === 0) {
                     const failSound = document.getElementById('failSound');
                     failSound.currentTime = 0;
-                    failSound.play().catch(error => console.warn('실패 사운드 재생 실패:', error));
+                    playSound(failSound);
                 }
 
                 setNextButtonEnabled(true);
@@ -920,12 +995,12 @@
                 // 결과 확인 버튼
                 const gameEndSound = document.getElementById('gameEndSound');
                 gameEndSound.currentTime = 0;
-                gameEndSound.play().catch(error => console.warn('게임 종료 사운드 재생 실패:', error));
+                playSound(gameEndSound);
             } else {
                 // 다음 버튼
                 const clickSound = document.getElementById('clickSound');
                 clickSound.currentTime = 0;
-                clickSound.play().catch(error => console.warn('클릭 사운드 재생 실패:', error));
+                playSound(clickSound);
             }
 
             const catCount = getCatCount(currentImage);
