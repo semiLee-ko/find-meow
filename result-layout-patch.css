@@ -34,3 +34,39 @@
 .result-score {
     white-space: nowrap !important;
 }
+
+/* Landscape mode - Larger result screen */
+@media (orientation: landscape) {
+    .result-screen {
+        max-width: 70% !important;
+        width: 700px !important;
+    }
+
+    .result-item {
+        padding: 18px 20px !important;
+        gap: 12px !important;
+        min-height: 90px !important;
+    }
+
+    .rank-emoji {
+        font-size: 2rem !important;
+    }
+
+    .rank-text {
+        font-size: 1rem !important;
+    }
+
+    .result-name {
+        font-size: 1.1rem !important;
+    }
+
+    .result-details {
+        font-size: 0.95rem !important;
+        gap: 12px !important;
+    }
+
+    .result-thumbnail img {
+        width: 100px !important;
+        height: 100px !important;
+    }
+}

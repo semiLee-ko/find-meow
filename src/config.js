@@ -7,7 +7,7 @@ export const config = {
     ENV: 'production', // 'development' 또는 'production'
 
     // 게임 설정
-    MAX_CHANNEL_IMAGES: 72,
+    MAX_CHANNEL_IMAGES: 82,
 
     // 기본 플레이어 이름
     DEFAULT_PLAYER_NAMES: [
