@@ -1,23 +1,22 @@
 {
   "name": "find-meow",
   "version": "1.0.0",
-  "description": "모바일 웹뷰(Capacitor WebView)에서 동작하는 귀여운 TV 채널 선택 미니게임입니다.",
+  "description": "앱인토스(Apps in Toss) 미니앱 - TV 채널 고양이 찾기 게임",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npx serve .",
-    "build": "powershell -Command \"if (!(Test-Path www)) { New-Item -ItemType Directory -Force www }; Copy-Item index.html, styles.css -Destination www -Force; Copy-Item -Recurse -Force images, point, audio -Destination www\""
+    "dev": "npx serve . -p 3000",
+    "build": "powershell -Command \"if (!(Test-Path dist)) { New-Item -ItemType Directory -Force dist }; Copy-Item index.html, styles.css, result-layout-patch.css -Destination dist -Force; Copy-Item -Recurse -Force images, point, audio -Destination dist\""
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "appentos",
+    "mini-app",
+    "game"
+  ],
+  "author": "CODA Creative",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "devDependencies": {
     "@playwright/test": "^1.57.0"
-  },
-  "dependencies": {
-    "@capacitor/android": "^7.4.4",
-    "@capacitor/cli": "^7.4.4",
-    "@capacitor/core": "^7.4.4"
   }
 }

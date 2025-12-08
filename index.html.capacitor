@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Find Meow - TV 채널 고양이 찾기 게임</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="result-layout-patch.css">
+</head>
+
+<body>
+    <!-- 도움말 버튼 -->
+    <button class="help-button" id="helpButton" onclick="openInfoPopup()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <circle cx="12" cy="17" r="0.5" fill="currentColor"></circle>
+        </svg>
+    </button>
+
+    <!-- 전체 사운드 토글 버튼 -->
+    <button class="audio-toggle-button disabled" id="audioToggleButton" onclick="toggleAllAudio()">
+        <svg id="audioOnIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+        </svg>
+        <svg id="audioOffIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+        </svg>
+    </button>
+
+    <!-- 고양이 발자국 애니메이션 컨테이너 -->
+    <div class="paw-prints-container" id="pawPrintsContainer"></div>
+
+    <!-- 로고 -->
+    <div class="logo"><img src="images/logo.png" alt="FindMeow Logo"></div>
+
+    <!-- TV 화면 -->
+    <div class="tv-container">
+        <div class="tv-screen" id="tvScreen">
+            <img class="tv-image" id="tvImage" src="" alt="TV Screen">
+            <div class="channel-display" id="channelDisplay">000</div>
+            <div class="cat-counter" id="catCounter">0</div>
+            <div class="tv-brand">CODA creaTV</div>
+        </div>
+    </div>
+
+    <!-- 벽 장식 영역 - 사운드바 스피커 -->
+    <div class="wall-decoration-area">
+        <div class="soundbar">
+            <div class="soundbar-body">
+                <!-- 왼쪽 스피커 그릴 -->
+                <div class="speaker-grill left">
+                    <div class="grill-dots"></div>
+                </div>
+
+                <!-- 중앙 컨트롤 영역 -->
+                <div class="soundbar-center">
+                    <button class="power-button" id="powerButton" onclick="toggleMusic()">
+                        <div class="power-icon"></div>
+                    </button>
+                    <div class="led-indicator" id="ledIndicator"></div>
+                    <div class="brand-label">SOUND</div>
+                </div>
+
+                <!-- 오른쪽 스피커 그릴 -->
+                <div class="speaker-grill right">
+                    <div class="grill-dots"></div>
+                </div>
+            </div>
+
+            <!-- 사운드 웨이브 애니메이션 -->
+            <div class="sound-waves" id="soundWaves">
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 초기 화면 (참여 인원 선택) -->
+    <div class="initial-screen" id="initialScreen">
+        <div class="input-group">
+            <label for="playerCount">참여 인원 수</label>
+
+            <!-- 네이티브 select (모바일용) -->
+            <select id="playerCount" class="native-select">
+                <option value="2">2명</option>
+                <option value="3" selected>3명</option>
+                <option value="4">4명</option>
+                <option value="5">5명</option>
+                <option value="6">6명</option>
+                <option value="7">7명</option>
+                <option value="8">8명</option>
+                <option value="9">9명</option>
+                <option value="10">10명</option>
+                <option value="11">11명</option>
+                <option value="12">12명</option>
+                <option value="13">13명</option>
+                <option value="14">14명</option>
+                <option value="15">15명</option>
+            </select>
+
+            <!-- 커스텀 드롭다운 (데스크톱용) -->
+            <div class="custom-dropdown" id="customDropdown">
+                <button type="button" class="custom-dropdown-button" id="dropdownButton">
+                    <span id="dropdownValue">3명</span>
+                    <svg class="dropdown-arrow" width="12" height="8" viewBox="0 0 12 8">
+                        <path fill="currentColor" d="M1.41 0L6 4.58 10.59 0 12 1.41l-6 6-6-6z" />
+                    </svg>
+                </button>
+                <div class="custom-dropdown-list" id="dropdownList">
+                    <div class="custom-dropdown-option" data-value="2">2명</div>
+                    <div class="custom-dropdown-option" data-value="3">3명</div>
+                    <div class="custom-dropdown-option" data-value="4">4명</div>
+                    <div class="custom-dropdown-option" data-value="5">5명</div>
+                    <div class="custom-dropdown-option" data-value="6">6명</div>
+                    <div class="custom-dropdown-option" data-value="7">7명</div>
+                    <div class="custom-dropdown-option" data-value="8">8명</div>
+                    <div class="custom-dropdown-option" data-value="9">9명</div>
+                    <div class="custom-dropdown-option" data-value="10">10명</div>
+                    <div class="custom-dropdown-option" data-value="11">11명</div>
+                    <div class="custom-dropdown-option" data-value="12">12명</div>
+                    <div class="custom-dropdown-option" data-value="13">13명</div>
+                    <div class="custom-dropdown-option" data-value="14">14명</div>
+                    <div class="custom-dropdown-option" data-value="15">15명</div>
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-primary" onclick="startGame()">게임 시작</button>
+    </div>
+
+    <!-- 리모컨 영역 -->
+    <div class="remote-control" id="remoteControl">
+        <div class="remote-header">
+            <div class="player-info" id="playerInfo">플레이어 1 / 3</div>
+        </div>
+
+        <input type="text" class="name-input" id="playerName" placeholder="이름을 입력하세요" maxlength="20">
+
+        <div class="number-pad">
+            <button class="number-btn" id="btn1" onclick="pressNumber('1')">1</button>
+            <button class="number-btn" id="btn2" onclick="pressNumber('2')">2</button>
+            <button class="number-btn" id="btn3" onclick="pressNumber('3')">3</button>
+            <button class="number-btn" id="btn4" onclick="pressNumber('4')">4</button>
+            <button class="number-btn" id="btn5" onclick="pressNumber('5')">5</button>
+            <button class="number-btn" id="btn6" onclick="pressNumber('6')">6</button>
+            <button class="number-btn" id="btn7" onclick="pressNumber('7')">7</button>
+            <button class="number-btn" id="btn8" onclick="pressNumber('8')">8</button>
+            <button class="number-btn" id="btn9" onclick="pressNumber('9')">9</button>
+            <button class="number-btn" id="btnBackspace" onclick="backspace()">⌫</button>
+            <button class="number-btn" id="btn0" onclick="pressNumber('0')">0</button>
+            <button class="number-btn channel-change" id="btnChannel" onclick="changeChannel()">채널<br>변경</button>
+        </div>
+
+        <button class="btn-next" id="btnNext" onclick="confirmPlayer()" disabled>다음</button>
+    </div>
+
+    <!-- 결과 화면 -->
+    <div class="result-screen" id="resultScreen">
+        <h2>게임 결과</h2>
+        <div id="resultList"></div>
+        <button class="btn btn-primary" onclick="resetGame()">광고보고 다시도전</button>
+    </div>
+
+    <!-- 게임 정보 팝업 -->
+    <div class="info-popup" id="infoPopup">
+        <div class="info-popup-content">
+            <!-- 닫기 버튼 -->
+            <button class="close-button" onclick="closeInfoPopup()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+
+            <!-- 등급 분류 -->
+            <div class="rating-section">
+                <div class="rating-badge">
+                    <div class="rating-icon">전체</div>
+                    <div class="rating-text">전체 이용가</div>
+                </div>
+                <p class="rating-description">본 게임은 자율 등급 분류에 따라 모든 연령이 이용 가능합니다.</p>
+            </div>
+
+            <!-- 게임 제목 -->
+            <h2 class="info-title">Find Meow</h2>
+            <p class="info-subtitle">TV 채널 속 숨은 고양이를 찾아라!</p>
+
+            <!-- 게임 룰 설명 -->
+            <div class="rules-section">
+                <h3>게임 방법</h3>
+
+                <div class="rule-item">
+                    <div class="rule-number">1</div>
+                    <div class="rule-content">
+                        <h4>참여 인원 선택</h4>
+                        <p>2명부터 15명까지 함께 플레이할 수 있습니다.</p>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <div class="rule-number">2</div>
+                    <div class="rule-content">
+                        <h4>이름 입력 & 채널 선택</h4>
+                        <p>플레이어 이름을 입력하고, 1~999번 중 원하는 채널 번호를 선택하세요.</p>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <div class="rule-number">3</div>
+                    <div class="rule-content">
+                        <h4>고양이 찾기</h4>
+                        <p>채널 변경 버튼을 누르면 화면에 이미지가 나타납니다. 화면을 스캔하며 숨어있는 <strong>고양이의 수</strong>를 자동으로 세어줍니다.</p>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <div class="rule-number">4</div>
+                    <div class="rule-content">
+                        <h4>승자 결정</h4>
+                        <p>모든 플레이어가 차례를 마치면, <strong>가장 많은 고양이를 찾은 사람</strong>이 승리합니다!</p>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <div class="rule-number">5</div>
+                    <div class="rule-content">
+                        <h4>이름 변경</h4>
+                        <p>각 플레이어 별로 <strong>이름을 변경</strong>할 수 있습니다.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 팁 섹션 -->
+            <div class="tips-section">
+                <h3>고양이 카운트 조건</h3>
+                <ul>
+                    <li>이목구비(눈,코,입)가 인식되도록 잘 나온 경우만 카운트 됩니다.</li>
+                    <li>고양이 이외의 다른 동물들은 카운트 되지 않습니다.</li>
+                    <li>스캔 애니메이션이 끝날 때까지 기다려주세요!</li>
+                </ul>
+            </div>
+
+            <!-- 회사 정보 -->
+            <div class="company-info">
+                <p>© 2025 CODA Creative. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 커스텀 Alert 팝업 -->
+    <div class="custom-alert-overlay" id="customAlertOverlay" onclick="closeCustomAlert()">
+        <div class="custom-alert-popup" onclick="event.stopPropagation()">
+            <div class="custom-alert-message" id="customAlertMessage"></div>
+            <button class="custom-alert-button" onclick="closeCustomAlert()">확인</button>
+        </div>
+    </div>
+
+
+    <!-- 배경 음악 -->
+    <audio id="bgMusic" loop preload="none">
+        <source id="bgMusicSrc" src="audio/background-music.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 스캔 효과음 -->
+    <audio id="scanSound">
+        <source src="audio/scan.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 고양이 발견 효과음 (여러 개 동시 재생을 위한 풀) -->
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 클릭 효과음 -->
+    <audio id="clickSound">
+        <source src="audio/click.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 실패 효과음 -->
+    <audio id="failSound">
+        <source src="audio/fail.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 게임 시작 효과음 -->
+    <audio id="gameStartSound">
+        <source src="audio/game_start.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 게임 종료 효과음 -->
+    <audio id="gameEndSound">
+        <source src="audio/game_end.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // ==================== 설정 ====================
+        const MAX_CHANNEL_IMAGES = 72;
+
+        // ==================== 게임 데이터 ====================
+        const channelImages = [];
+        for (let i = 1; i <= MAX_CHANNEL_IMAGES; i++) {
+            const paddedNum = String(i).padStart(4, '0');
+            channelImages.push(`channel${paddedNum}.png`);
+        }
+
+        // 기본 플레이어 이름 (20개)
+        const DEFAULT_PLAYER_NAMES = [
+            '냥콩이', '몽글냥', '고양별', '냥뭉치', '꼬물이',
+            '말랑발바닥', '솜발이', '코코냥', '별냥이', '구름발자국',
+            '살랑이', '초코꼬리', '동글냥', '하늘발자국', '달냥이',
+            '순둥냥', '눈송이냥', '포포냥', '가을냥', '총총이'
+        ];
+
+        // 고양이 사운드 풀 초기화
+        const catSoundPool = Array.from(document.querySelectorAll('.catSound'));
+        let currentCatSoundIndex = 0;
+
+        // ==================== 커스텀 드롭다운 로직 ====================
+        const customDropdown = document.getElementById('customDropdown');
+        const dropdownButton = document.getElementById('dropdownButton');
+        const dropdownList = document.getElementById('dropdownList');
+        const dropdownValue = document.getElementById('dropdownValue');
+        const nativeSelect = document.getElementById('playerCount');
+
+        // 드롭다운 토글
+        if (dropdownButton) {
+            dropdownButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                customDropdown.classList.toggle('open');
+            });
+        }
+
+        // 옵션 선택
+        if (dropdownList) {
+            dropdownList.addEventListener('click', (e) => {
+                if (e.target.classList.contains('custom-dropdown-option')) {
+                    const value = e.target.getAttribute('data-value');
+                    const text = e.target.textContent;
+
+                    // 선택된 옵션 표시
+                    dropdownValue.textContent = text;
+
+                    // 네이티브 select 동기화
+                    nativeSelect.value = value;
+
+                    // 선택된 옵션 스타일 업데이트
+                    document.querySelectorAll('.custom-dropdown-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    e.target.classList.add('selected');
+
+                    // 드롭다운 닫기
+                    customDropdown.classList.remove('open');
+                }
+            });
+        }
+
+        // 드롭다운 외부 클릭 시 닫기
+        document.addEventListener('click', () => {
+            if (customDropdown) {
+                customDropdown.classList.remove('open');
+            }
+        });
+
+        // 초기 선택된 옵션 표시
+        document.addEventListener('DOMContentLoaded', () => {
+            const selectedOption = document.querySelector('.custom-dropdown-option[data-value="3"]');
+            if (selectedOption) {
+                selectedOption.classList.add('selected');
+            }
+        });
+
+        let totalPlayers = 3;
+        let currentPlayerIndex = 0;
+        let currentChannel = '';
+        let currentImage = '';
+        let players = [];
+        let catPositions = {};
+        let usedImages = [];
+
+        // ==================== 이름 유효성 검사 ====================
+        function validatePlayerName(name) {
+            if (!name || name.trim() === '') {
+                return { valid: false, message: '이름을 입력해주세요!' };
+            }
+
+            const trimmedName = name.trim();
+            const validCharsRegex = /^[가-힣a-zA-Z0-9]+$/;
+            if (!validCharsRegex.test(trimmedName)) {
+                return { valid: false, message: '한글, 영문, 숫자만 사용 가능합니다!' };
+            }
+
+            const koreanChars = trimmedName.match(/[가-힣]/g) || [];
+            const otherChars = trimmedName.match(/[a-zA-Z0-9]/g) || [];
+
+            if (koreanChars.length > 0) {
+                const totalLength = koreanChars.length + otherChars.length;
+                if (totalLength < 2 || totalLength > 10) {
+                    return { valid: false, message: '한글 포함 시 2~10자로 입력해주세요!' };
+                }
+            } else {
+                if (otherChars.length < 2 || otherChars.length > 20) {
+                    return { valid: false, message: '영문/숫자만 사용 시 2~20자로 입력해주세요!' };
+                }
+            }
+
+            return { valid: true, message: '' };
+        }
+
+        // ==================== 초기화 ====================
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('point/json/pointInfo.json');
+                if (response.ok) {
+                    catPositions = await response.json();
+                    console.log('고양이 위치 정보 로드 완료');
+                }
+            } catch (error) {
+                console.warn('고양이 위치 정보 로드 실패:', error);
+            }
+        });
+
+        // ==================== 전체 사운드 제어 ====================
+        let isAudioEnabled = false; // 기본값: 꺼짐
+
+        function toggleAllAudio() {
+            isAudioEnabled = !isAudioEnabled;
+
+            const audioOnIcon = document.getElementById('audioOnIcon');
+            const audioOffIcon = document.getElementById('audioOffIcon');
+            const audioToggleButton = document.getElementById('audioToggleButton');
+
+            if (isAudioEnabled) {
+                // 사운드 켜기
+                audioOnIcon.style.display = 'block';
+                audioOffIcon.style.display = 'none';
+                audioToggleButton.classList.remove('disabled');
+                console.log('🔊 All audio enabled');
+            } else {
+                // 사운드 끄기 - 모든 오디오 정지
+                audioOnIcon.style.display = 'none';
+                audioOffIcon.style.display = 'block';
+                audioToggleButton.classList.add('disabled');
+
+                // 배경음악이 재생 중이면 정지
+                const bgMusic = document.getElementById('bgMusic');
+                if (bgMusic && isMusicPlaying) {
+                    bgMusic.pause();
+                    const powerButton = document.getElementById('powerButton');
+                    const ledIndicator = document.getElementById('ledIndicator');
+                    const soundWaves = document.getElementById('soundWaves');
+                    powerButton.classList.remove('active');
+                    ledIndicator.classList.remove('active');
+                    soundWaves.classList.remove('active');
+                    isMusicPlaying = false;
+                }
+
+                console.log('🔇 All audio disabled');
+            }
+        }
+
+        // ==================== 사운드 재생 헬퍼 함수 ====================
+        function playSound(audioElement) {
+            if (!isAudioEnabled) {
+                console.log('⚠️ Audio is disabled');
+                return Promise.resolve();
+            }
+            if (audioElement && typeof audioElement.play === 'function') {
+                return audioElement.play().catch(err => {
+                    console.warn('Audio play failed:', err);
+                });
+            }
+            return Promise.resolve();
+        }
+
+        // ==================== 배경 음악 토글 ====================
+        let isMusicPlaying = false;
+
+        // ==================== 오디오 디버깅 및 에러 복구 ====================
+        function toggleMusic() {
+            const bgMusic = document.getElementById('bgMusic');
+            const bgMusicSrc = document.getElementById('bgMusicSrc');
+            const powerButton = document.getElementById('powerButton');
+            const ledIndicator = document.getElementById('ledIndicator');
+            const soundWaves = document.getElementById('soundWaves');
+
+            if (!bgMusic) return;
+
+            if (isMusicPlaying) {
+                // 음악 끄기
+                bgMusic.pause();
+                powerButton.classList.remove('active');
+                ledIndicator.classList.remove('active');
+                soundWaves.classList.remove('active');
+                isMusicPlaying = false;
+            } else {
+                // 전체 사운드가 꺼져있으면 재생 불가
+                if (!isAudioEnabled) {
+                    console.log('⚠️ Audio is disabled. Enable audio first.');
+                    return;
+                }
+
+                // 시각적 효과 먼저 활성화 (음악 파일 없어도 작동)
+                powerButton.classList.add('active');
+                ledIndicator.classList.add('active');
+                soundWaves.classList.add('active');
+                isMusicPlaying = true;
+
+                // 음악 재생 시도 (파일이 있으면 재생, 없으면 무시)
+                if (bgMusicSrc && bgMusicSrc.src) {
+                    bgMusic.play()
+                        .then(() => {
+                            console.log('배경음 재생 시작');
+                        })
+                        .catch(error => {
+                            console.warn('음악 재생 실패 (정상 - 음악 파일이 없거나 브라우저 정책):', error);
+                            // 시각적 효과는 유지
+                        });
+                } else {
+                    console.info('배경 음악 파일이 설정되지 않았습니다. 시각적 효과만 표시됩니다.');
+                }
+            }
+        }
+
+        // ==================== 게임 정보 팝업 ====================
+        function openInfoPopup() {
+            const popup = document.getElementById('infoPopup');
+            popup.classList.add('active');
+            document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
+        }
+
+        function closeInfoPopup() {
+            const popup = document.getElementById('infoPopup');
+            popup.classList.remove('active');
+            document.body.style.overflow = ''; // 스크롤 복원
+        }
+
+        // ==================== 커스텀 Alert 팝업 ====================
+        function showCustomAlert(message) {
+            const overlay = document.getElementById('customAlertOverlay');
+            const messageEl = document.getElementById('customAlertMessage');
+            messageEl.textContent = message;
+            overlay.classList.add('active');
+        }
+
+        function closeCustomAlert() {
+            const overlay = document.getElementById('customAlertOverlay');
+            overlay.classList.remove('active');
+        }
+
+        // ==================== 고양이 발자국 애니메이션 ====================
+        function createPawPrint(x, y, rotation = 0) {
+            // TV 영역 체크
+            const tvScreen = document.querySelector('.tv-screen');
+            if (tvScreen) {
+                const tvRect = tvScreen.getBoundingClientRect();
+                const pawSize = 50; // 발자국 크기
+
+                // 발자국이 TV 영역과 겹치는지 확인
+                if (x + pawSize > tvRect.left &&
+                    x < tvRect.right &&
+                    y + pawSize > tvRect.top &&
+                    y < tvRect.bottom) {
+                    return; // TV 영역이면 발자국 생성 안함
+                }
+            }
+
+            const container = document.getElementById('pawPrintsContainer');
+            const paw = document.createElement('div');
+            paw.className = 'paw-print';
+            paw.style.left = `${x}px`;
+            paw.style.top = `${y}px`;
+            paw.style.transform = `rotate(${rotation}deg) scaleX(-1)`;
+
+            container.appendChild(paw);
+
+            // 애니메이션 끝나면 제거
+            setTimeout(() => {
+                paw.remove();
+            }, 8000);
+        }
+
+        // ==================== 고양이 발자국 애니메이션 (연속 걷기) ====================
+        let catPosition = { x: 0, y: 0 };
+        let catAngle = 0;
+        let isWalking = false;
+
+        function initializeCatPosition() {
+            // 화면 중앙 근처에서 시작
+            catPosition.x = window.innerWidth / 2 + (Math.random() - 0.5) * 200;
+            catPosition.y = window.innerHeight / 2 + (Math.random() - 0.5) * 200;
+            catAngle = Math.random() * 360;
+        }
+
+        function getNextDirection() {
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            const margin = 100;
+
+            // 화면 가장자리에 가까우면 안쪽으로 방향 전환
+            if (catPosition.x < margin) {
+                catAngle = -45 + Math.random() * 90; // 오른쪽으로
+            } else if (catPosition.x > screenWidth - margin) {
+                catAngle = 135 + Math.random() * 90; // 왼쪽으로
+            } else if (catPosition.y < margin) {
+                catAngle = 45 + Math.random() * 90; // 아래쪽으로
+            } else if (catPosition.y > screenHeight - margin) {
+                catAngle = 225 + Math.random() * 90; // 위쪽으로
+            } else {
+                // 화면 중앙에서는 자유롭게 방향 변경 (-45도 ~ +45도)
+                catAngle += (Math.random() - 0.5) * 90;
+            }
+
+            // 각도 정규화 (0-360)
+            catAngle = ((catAngle % 360) + 360) % 360;
+        }
+
+        function createContinuousPawTrail() {
+            const pawCount = 8; // 고정된 발자국 개수
+            const stepSize = 45; // 발자국 간격
+            const stepWidth = 12; // 좌우 간격
+
+            // 새로운 방향 결정
+            getNextDirection();
+
+            const rad = (catAngle * Math.PI) / 180;
+
+            // 발자국 생성
+            for (let i = 0; i < pawCount; i++) {
+                setTimeout(() => {
+                    // 좌우 교대로 발자국 찍기
+                    const side = (i % 2 === 0) ? -1 : 1;
+                    const offsetX = Math.cos(rad) * stepSize * i + Math.sin(rad) * stepWidth * side;
+                    const offsetY = Math.sin(rad) * stepSize * i - Math.cos(rad) * stepWidth * side;
+
+                    const x = catPosition.x + offsetX;
+                    const y = catPosition.y + offsetY;
+
+                    // 발자국 회전 (이동 방향에 맞춤 + 90도)
+                    const rotation = catAngle + 90 + (Math.random() - 0.5) * 10;
+
+                    createPawPrint(x, y, rotation);
+
+                    // 마지막 발자국에서 위치 업데이트
+                    if (i === pawCount - 1) {
+                        catPosition.x = x;
+                        catPosition.y = y;
+                    }
+                }, i * 250); // 0.25초 간격으로 발자국 생성
+            }
+        }
+
+        // 연속적으로 발자국 생성
+        function startContinuousWalking() {
+            if (!isWalking) {
+                initializeCatPosition();
+                isWalking = true;
+            }
+
+            createContinuousPawTrail();
+
+            // 다음 경로 시작 (현재 경로가 끝나기 전에 시작)
+            setTimeout(startContinuousWalking, 1800); // 8개 * 250ms = 2000ms보다 조금 빨리
+        }
+
+        // 페이지 로드 후 발자국 애니메이션 시작
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(startContinuousWalking, 2000); // 2초 후 시작
+        });
+
+        // ==================== 앱 생명주기 관리 (백그라운드/포그라운드) ====================
+        document.addEventListener('visibilitychange', () => {
+            const bgMusic = document.getElementById('bgMusic');
+            const scanSound = document.getElementById('scanSound');
+            const gameStartSound = document.getElementById('gameStartSound');
+            const gameEndSound = document.getElementById('gameEndSound');
+            const failSound = document.getElementById('failSound');
+
+            if (document.hidden) {
+                // 앱이 백그라운드로 갔을 때 - 모든 오디오 일시정지
+                window.wasMusicPlaying = bgMusic && !bgMusic.paused;
+
+                if (bgMusic) bgMusic.pause();
+                if (scanSound) scanSound.pause();
+                if (gameStartSound) gameStartSound.pause();
+                if (gameEndSound) gameEndSound.pause();
+                if (failSound) failSound.pause();
+
+                console.log('앱 백그라운드 - 모든 오디오 일시정지');
+            } else {
+                console.log('앱 포그라운드 복귀');
+
+                // 배경음악이 재생 중이었다면 다시 재생
+                if (window.wasMusicPlaying && isMusicPlaying && bgMusic) {
+                    bgMusic.play()
+                        .then(() => console.log('배경음악 자동 재개'))
+                        .catch(error => console.warn('배경음악 재개 실패:', error));
+                }
+            }
+        });
+
+        // ==================== 화면 크기 변경 시 레이아웃 강제 업데이트 (Safe Area 대응) ====================
+        // 브라우저(WebView)가 제공하는 안전 영역(insets)에만 맡깁니다.
+
+        // ==================== 게임 시작 ====================
+        function startGame() {
+            // 게임 시작 사운드 재생
+            const gameStartSound = document.getElementById('gameStartSound');
+            gameStartSound.currentTime = 0;
+            playSound(gameStartSound);
+
+            totalPlayers = parseInt(document.getElementById('playerCount').value);
+            currentPlayerIndex = 0;
+            players = [];
+            usedImages = [];
+
+            document.getElementById('initialScreen').classList.add('slide-out');
+            setTimeout(() => {
+                document.getElementById('initialScreen').classList.add('hidden');
+                const remoteControl = document.getElementById('remoteControl');
+                remoteControl.style.display = 'block';
+                remoteControl.classList.add('slide-in');
+                updatePlayerInfo();
+                setDefaultPlayerName();
+            }, 500);
+        }
+
+        // ==================== 기본 플레이어 이름 설정 ====================
+        function setDefaultPlayerName() {
+            const nameInput = document.getElementById('playerName');
+            if (currentPlayerIndex < DEFAULT_PLAYER_NAMES.length) {
+                nameInput.value = DEFAULT_PLAYER_NAMES[currentPlayerIndex];
+            } else {
+                nameInput.value = `플레이어${currentPlayerIndex + 1}`;
+            }
+        }
+
+        // ==================== 플레이어 정보 업데이트 ====================
+        function updatePlayerInfo() {
+            const playerInfo = document.getElementById('playerInfo');
+            playerInfo.textContent = `플레이어 ${currentPlayerIndex + 1} / ${totalPlayers}`;
+        }
+
+        // ==================== 리모컨 기능 ====================
+        function pressNumber(num) {
+            const btn = window.event ? window.event.target : event.target;
+            btn.classList.add('pressed');
+            setTimeout(() => btn.classList.remove('pressed'), 200);
+
+            // 첫 자리에 0을 입력하지 못하도록 방지
+            if (currentChannel.length === 0 && num === '0') {
+                return;
+            }
+
+            if (currentChannel.length < 3) {
+                currentChannel += num;
+                updateChannelDisplay();
+            }
+        }
+
+        function backspace() {
+            currentChannel = currentChannel.slice(0, -1);
+            updateChannelDisplay();
+        }
+
+        function updateChannelDisplay() {
+            const display = document.getElementById('channelDisplay');
+            if (currentChannel.length > 0) {
+                display.textContent = currentChannel.padStart(3, '0');
+                display.classList.add('active');
+            } else {
+                display.textContent = '000';
+                display.classList.remove('active');
+            }
+        }
+
+        // ==================== 버튼 활성화/비활성화 ====================
+        function setNumberPadEnabled(enabled) {
+            const buttons = ['btn1', 'btn2', 'btn3', 'btn4', 'btn5', 'btn6', 'btn7', 'btn8', 'btn9', 'btn0', 'btnBackspace', 'btnChannel'];
+            buttons.forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.disabled = !enabled;
+            });
+        }
+
+        function setNextButtonEnabled(enabled) {
+            document.getElementById('btnNext').disabled = !enabled;
+        }
+
+        // ==================== 다음 버튼 텍스트 업데이트 ====================
+        function updateNextButtonText() {
+            const btnNext = document.getElementById('btnNext');
+            if (currentPlayerIndex === totalPlayers - 1) {
+                btnNext.textContent = '결과 확인';
+            } else {
+                btnNext.textContent = '다음';
+            }
+        }
+
+        // ==================== 카운터 업데이트 (팡 효과 - 숫자만) ====================
+        function updateCatCounter(count) {
+            const counter = document.getElementById('catCounter');
+            counter.textContent = count;
+            counter.classList.add('active');
+
+            // 팡 효과
+            counter.classList.remove('pop');
+            void counter.offsetWidth; // 리플로우 강제
+            counter.classList.add('pop');
+        }
+
+        // ==================== 채널 변경 ====================
+        function changeChannel() {
+            const channelNum = parseInt(currentChannel);
+
+            if (!currentChannel || channelNum < 1 || channelNum > 999) {
+                showCustomAlert('채널 번호는 1~999 사이로 입력해주세요!');
+                return;
+            }
+
+            // 이미 사용된 채널 번호인지 확인
+            const usedChannels = players.map(p => p.channel);
+            if (usedChannels.includes(currentChannel.padStart(3, '0'))) {
+                showCustomAlert(`채널 ${currentChannel.padStart(3, '0')}번은 이미 선택되었습니다!\n\n사용된 채널: ${usedChannels.join(', ')}`);
+                return;
+            }
+
+            const availableImages = channelImages.filter(img => !usedImages.includes(img));
+
+            if (availableImages.length === 0) {
+                showCustomAlert('사용 가능한 이미지가 모두 소진되었습니다!');
+                return;
+            }
+
+            const randomIndex = Math.floor(Math.random() * availableImages.length);
+            currentImage = availableImages[randomIndex];
+
+            const tvImage = document.getElementById('tvImage');
+            tvImage.src = `images/channels/${currentImage}`;
+            tvImage.style.display = 'block';
+
+            tvImage.onload = () => {
+                displayCatScanAnimation(currentImage);
+                setNumberPadEnabled(false);
+            };
+
+            tvImage.onerror = () => {
+                showCustomAlert('이미지를 불러올 수 없습니다!');
+                tvImage.style.display = 'none';
+            };
+        }
+
+        // ==================== 스캔 애니메이션으로 고양이 감지 표시 ====================
+        function displayCatScanAnimation(imageName) {
+            // 기존 펄스와 스캔 라인 제거
+            const existingPulses = document.querySelectorAll('.cat-pulse');
+            existingPulses.forEach(pulse => pulse.remove());
+
+            const existingScanLine = document.querySelector('.scan-line');
+            if (existingScanLine) existingScanLine.remove();
+
+            if (!catPositions[imageName]) {
+                console.warn(`${imageName}에 대한 고양이 위치 정보가 없습니다.`);
+                return;
+            }
+
+            const cats = catPositions[imageName].cats;
+            const tvScreen = document.getElementById('tvScreen');
+
+            // 카운터 초기화 및 표시 (애니메이션 없이)
+            const counter = document.getElementById('catCounter');
+            counter.textContent = 0;
+            counter.classList.add('active');
+
+            // 스캔 라인 생성
+            const scanLine = document.createElement('div');
+            scanLine.className = 'scan-line';
+            tvScreen.appendChild(scanLine);
+
+            // 스캔 사운드 재생
+            const scanSound = document.getElementById('scanSound');
+            scanSound.currentTime = 0;
+            playSound(scanSound);
+
+            let detectedCount = 0;
+
+            // 각 고양이 위치에 펄스 효과 추가 (스캔 라인이 지나갈 때)
+            cats.forEach((cat, index) => {
+                // 스캔 라인이 해당 위치에 도달하는 시간 계산 (2초 동안 0%에서 100%로 이동)
+                const delay = cat.x * 2000; // x 좌표에 비례한 딜레이 (밀리초)
+
+                setTimeout(() => {
+                    const pulse = document.createElement('div');
+                    pulse.className = 'cat-pulse';
+                    pulse.style.left = `${cat.x * 100}%`;
+                    pulse.style.top = `${cat.y * 100}%`;
+                    tvScreen.appendChild(pulse);
+
+                    // 카운터 증가 (팡 효과)
+                    detectedCount++;
+                    updateCatCounter(detectedCount);
+
+                    // 고양이 발견 사운드 재생 (오디오 풀 사용)
+                    const catSound = catSoundPool[currentCatSoundIndex];
+                    catSound.currentTime = 0;
+                    playSound(catSound);
+
+                    // 다음 오디오 요소로 순환
+                    currentCatSoundIndex = (currentCatSoundIndex + 1) % catSoundPool.length;
+
+                    // 플로팅 숫자 표시 제거됨
+
+                    // 펄스 애니메이션이 끝나면 제거
+                    setTimeout(() => {
+                        pulse.remove();
+                    }, 1500);
+                }, delay);
+            });
+
+            // 스캔 라인 제거 및 다음 버튼 활성화
+            setTimeout(() => {
+                scanLine.remove();
+
+                // 고양이가 0마리면 실패 사운드 재생
+                if (detectedCount === 0) {
+                    const failSound = document.getElementById('failSound');
+                    failSound.currentTime = 0;
+                    playSound(failSound);
+                }
+
+                setNextButtonEnabled(true);
+                updateNextButtonText();
+            }, 2000);
+        }
+
+        // ==================== 플레이어 확정 ====================
+        function confirmPlayer() {
+            const name = document.getElementById('playerName').value.trim();
+            const channelNum = parseInt(currentChannel);
+
+            const validation = validatePlayerName(name);
+            if (!validation.valid) {
+                showCustomAlert(validation.message);
+                return;
+            }
+
+            if (!currentChannel || channelNum < 1 || channelNum > 999) {
+                showCustomAlert('채널을 먼저 선택해주세요! (1~999)');
+                return;
+            }
+
+            if (!currentImage) {
+                showCustomAlert('채널변경 버튼을 눌러 이미지를 먼저 표시해주세요!');
+                return;
+            }
+
+            // 버튼 사운드 재생 (마지막 플레이어면 game_end, 아니면 click)
+            if (currentPlayerIndex === totalPlayers - 1) {
+                // 결과 확인 버튼
+                const gameEndSound = document.getElementById('gameEndSound');
+                gameEndSound.currentTime = 0;
+                playSound(gameEndSound);
+            } else {
+                // 다음 버튼
+                const clickSound = document.getElementById('clickSound');
+                clickSound.currentTime = 0;
+                playSound(clickSound);
+            }
+
+            const catCount = getCatCount(currentImage);
+
+            players.push({
+                name: name,
+                channel: currentChannel.padStart(3, '0'),
+                catCount: catCount,
+                imageName: currentImage
+            });
+
+            usedImages.push(currentImage);
+            currentPlayerIndex++;
+
+            if (currentPlayerIndex < totalPlayers) {
+                resetForNextPlayer();
+            } else {
+                showResults();
+            }
+        }
+
+        // ==================== 다음 플레이어 준비 ====================
+        function resetForNextPlayer() {
+            currentChannel = '';
+            currentImage = '';
+
+            const tvImage = document.getElementById('tvImage');
+            tvImage.style.display = 'none';
+
+            // 펄스와 스캔 라인 제거
+            const existingPulses = document.querySelectorAll('.cat-pulse');
+            existingPulses.forEach(pulse => pulse.remove());
+
+            const existingScanLine = document.querySelector('.scan-line');
+            if (existingScanLine) existingScanLine.remove();
+
+            // 카운터 숨기기
+            const counter = document.getElementById('catCounter');
+            counter.classList.remove('active', 'pop');
+
+            updateChannelDisplay();
+            updatePlayerInfo();
+            setDefaultPlayerName();
+            setNumberPadEnabled(true);
+            setNextButtonEnabled(false);
+        }
+
+        // ==================== 고양이 개수 계산 ====================
+        function getCatCount(imageName) {
+            if (catPositions[imageName] && catPositions[imageName].cats) {
+                return catPositions[imageName].cats.length;
+            }
+            return 0;
+        }
+
+        // ==================== 결과 표시 (수정된 공동 등수 처리 + 썸네일) ====================
+        function showResults() {
+            players.sort((a, b) => b.catCount - a.catCount);
+
+            const resultList = document.getElementById('resultList');
+            resultList.innerHTML = '';
+
+            // 각 점수별 플레이어 수 카운트
+            const scoreCount = {};
+            players.forEach(player => {
+                scoreCount[player.catCount] = (scoreCount[player.catCount] || 0) + 1;
+            });
+
+            let currentRank = 1;
+            let previousCount = -1;
+
+            players.forEach((player, index) => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'result-item';
+
+                // 등수 업데이트
+                if (player.catCount !== previousCount) {
+                    currentRank = index + 1;
+                }
+                previousCount = player.catCount;
+
+                // 같은 점수를 가진 플레이어가 2명 이상인지 확인
+                const isTied = scoreCount[player.catCount] > 1;
+
+                let rankClass = '';
+                let rankEmoji = '';
+                let rankText = '';
+
+                if (currentRank === 1) {
+                    rankClass = 'first';
+                    rankEmoji = '🥇';
+                    rankText = isTied ? '공동 1등' : '1등';
+                } else if (currentRank === 2) {
+                    rankClass = 'second';
+                    rankEmoji = '🥈';
+                    rankText = isTied ? '공동 2등' : '2등';
+                } else if (currentRank === 3) {
+                    rankClass = 'third';
+                    rankEmoji = '🥉';
+                    rankText = isTied ? '공동 3등' : '3등';
+                } else {
+                    rankText = isTied ? `공동 ${currentRank}등` : `${currentRank}등`;
+                }
+
+                resultItem.innerHTML = `
+                    <div class="result-rank ${rankClass}">
+                        ${rankEmoji ? `<span class="rank-emoji">${rankEmoji}</span>` : ''}
+                        <span class="rank-text">${rankText}</span>
+                    </div>
+                    <div class="result-info">
+                        <div class="result-name">${player.name}</div>
+                        <div class="result-details">
+                            <span class="result-channel">채널 ${player.channel}</span>
+                            <span class="result-score">🐱 ${player.catCount}마리</span>
+                        </div>
+                    </div>
+                    <div class="result-thumbnail">
+                        <img src="images/channels/${player.imageName}" alt="채널 ${player.channel}">
+                    </div>
+                `;
+
+                resultList.appendChild(resultItem);
+            });
+
+            document.getElementById('remoteControl').style.display = 'none';
+            document.getElementById('resultScreen').classList.add('active');
+        }
+
+        // ==================== 게임 리셋 ====================
+        function resetGame() {
+            // 게임 상태 초기화 (음악은 유지)
+            totalPlayers = 3;
+            currentPlayerIndex = 0;
+            currentChannel = '';
+            currentImage = '';
+            players = [];
+            usedImages = [];
+
+            // UI 초기화
+            document.getElementById('resultScreen').classList.remove('active');
+            document.getElementById('remoteControl').style.display = 'none';
+            document.getElementById('remoteControl').classList.remove('slide-in');
+            document.getElementById('initialScreen').classList.remove('slide-out', 'hidden');
+
+            // TV 화면 초기화
+            const tvImage = document.getElementById('tvImage');
+            tvImage.style.display = 'none';
+            tvImage.src = '';
+            tvImage.onload = null;
+            tvImage.onerror = null;
+
+            // 카운터 초기화
+            const counter = document.getElementById('catCounter');
+            counter.classList.remove('active', 'pop');
+            counter.textContent = '0';
+
+            // 채널 디스플레이 초기화
+            const channelDisplay = document.getElementById('channelDisplay');
+            channelDisplay.classList.remove('active');
+            channelDisplay.textContent = '000';
+
+            // 플레이어 수 선택 초기화
+            document.getElementById('playerCount').value = '3';
+
+            // 입력 필드 초기화
+            document.getElementById('playerName').value = '';
+
+            // 버튼 상태 초기화
+            setNumberPadEnabled(true);
+            setNextButtonEnabled(false);
+
+            // 펄스와 스캔 라인 제거
+            const existingPulses = document.querySelectorAll('.cat-pulse');
+            existingPulses.forEach(pulse => pulse.remove());
+
+            const existingScanLine = document.querySelector('.scan-line');
+            if (existingScanLine) existingScanLine.remove();
+        }
+    </script>
+</body>
+
+</html>

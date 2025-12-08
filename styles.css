@@ -10,36 +10,60 @@ html {
 }
 
 body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    min-height: 100%;
-}
+    /* TDS-compatible Font Stack */
+    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
 
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f4f1ea;
-    min-width: 344px;
+    min-width: 280px;
+    /* Reduced from 344px for Fold 5 cover screen support */
 
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
 
-    padding: 10px 20px 0 20px;
+    /* Padding Reset & Safe Area */
+    padding: 0;
 
-    /* Safe Area */
+    /* Top/Bottom padding with Safe Area */
     padding-top: max(10px, env(safe-area-inset-top));
-
-    /* 기본 20px + safe-area(inset-bottom) 을 더해주는 방식으로 변경 */
-    padding-bottom: 20px;
     padding-bottom: env(safe-area-inset-bottom);
 
-    padding-left: max(20px, env(safe-area-inset-left));
-    padding-right: max(20px, env(safe-area-inset-right));
+    /* Horizontal Symmetrical Padding REMOVED from Body */
+    padding-left: 0;
+    padding-right: 0;
 
     overflow-x: hidden;
-    overflow-y: auto;
+    overflow-y: hidden;
+    position: relative;
+}
+
+/* Layout Wrappers */
+.main-layout {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    flex: 1;
+    /* Ensure it takes full available height */
+
+    /* Enforce Visual Symmetry: Constant margin + Safe Area */
+    padding-left: calc(10px + env(safe-area-inset-left));
+    padding-right: calc(10px + env(safe-area-inset-right));
+}
+
+.game-area {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.controls-area {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     position: relative;
 }
 
@@ -68,11 +92,39 @@ body {
     padding: 8px 0 20px 0;
 }
 
+/* ==================== 게임 헤더 (Unified Portrait/Landscape) ==================== */
+.game-header {
+    width: 100%;
+    /* Match TV width for portrait */
+    max-width: min(500px, 70vh);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Logo centered */
+    margin: 0 auto 8px auto;
+    /* Centered in parent, 8px bottom */
+    z-index: 90;
+    flex-shrink: 0;
+}
+
+.header-buttons {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 20;
+}
+
 /* ==================== 도움말 버튼 ==================== */
 .help-button {
-    position: fixed;
-    top: 50px;
-    left: 15px;
+    /* Reset Fixed Positioning */
+    position: relative;
+    top: auto;
+    left: auto;
+
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -106,10 +158,11 @@ body {
 
 /* ==================== 전체 사운드 토글 버튼 ==================== */
 .audio-toggle-button {
-    position: fixed;
-    top: 50px;
-    left: 55px;
-    /* 물음표 버튼(15px) + 버튼 크기(32px) + 간격(8px) */
+    /* Reset Fixed Positioning */
+    position: relative;
+    top: auto;
+    left: auto;
+
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -488,57 +541,54 @@ body {
     }
 }
 
-/* ==================== 게임 정보 팝업 ==================== */
+/* ==================== 게임 정보 팝업 (TDS Bottom Sheet Style) ==================== */
 .info-popup {
     position: fixed;
     inset: 0;
     width: 100%;
-    /* height: 100vh; removed */
-    padding-bottom: calc(20px + env(safe-area-inset-bottom));
-    background: rgba(0, 0, 0, 0.95);
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
     display: none;
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
     z-index: 2000;
-    padding: 20px;
-    overflow-y: auto;
+    padding: 0;
 }
 
 .info-popup.active {
     display: flex;
-    animation: fadeIn 0.3s ease;
+    animation: fadeInOverlay 0.3s ease;
 }
 
-@keyframes fadeIn {
+@keyframes fadeInOverlay {
     from {
-        opacity: 0;
+        background: rgba(0, 0, 0, 0);
     }
 
     to {
-        opacity: 1;
+        background: rgba(0, 0, 0, 0.6);
     }
 }
 
 .info-popup-content {
     background: #ffffff;
-    border-radius: 24px;
-    padding: 32px 24px;
+    border-radius: 24px 24px 0 0;
+    padding: 32px 24px calc(32px + env(safe-area-inset-bottom)) 24px;
     max-width: 600px;
     width: 100%;
-    max-height: 90vh;
+    max-height: 85vh;
     overflow-y: auto;
     position: relative;
-    animation: slideUpFade 0.4s cubic-bezier(0.33, 1, 0.68, 1);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+    animation: slideUpBottomSheet 0.4s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
-@keyframes slideUpFade {
+@keyframes slideUpBottomSheet {
     from {
-        opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(100%);
     }
 
     to {
-        opacity: 1;
         transform: translateY(0);
     }
 }
@@ -889,7 +939,7 @@ body {
     border-radius: 50%;
     transform: translate(-50%, -50%);
     z-index: 15;
-    animation: pulse 1.5s ease-out infinite;
+    animation: pulse 1.5s ease-out;
 }
 
 @keyframes pulse {
@@ -1389,27 +1439,55 @@ body {
 }
 
 
+/* ==================== Layout Wrappers (Default/Portrait) ==================== */
+.main-layout {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    flex: 1;
+    /* Fill available vertical space in body */
+    position: relative;
+    /* Ensure no extra gaps */
+    gap: 0;
+}
+
+.game-area {
+    width: 100%;
+    /* In portrait, game area takes top/center */
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.controls-area {
+    width: 100%;
+    /* In portrait, controls push to bottom */
+    flex: 1;
+    /* Take remaining space */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    /* Push children to bottom */
+    padding: 0;
+    /* No generic padding here, let children handle it */
+}
+
+/* Tablet/PC Layout */
 @media (min-width: 768px) {
     .tv-container {
         /* 태블릿/PC: TV는 세로 크기에 맞춰 줄어들 수 있음 */
+        max-width: min(800px, 70vh);
+    }
+
+    .game-header {
+        /* Tablet Mode: Match wider TV width */
         max-width: min(800px, 70vh);
     }
 
     .wall-decoration-area {
         /* 벽 장식 영역도 TV와 동일한 너비 규칙 적용 */
-        max-width: min(800px, 70vh);
-    }
-
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-
-@media (min-width: 768px) {
-    .tv-container {
-        /* 태블릿/PC: TV는 세로 크기에 맞춰 줄어들 수 있음 */
         max-width: min(800px, 70vh);
     }
 
@@ -1436,47 +1514,42 @@ body {
         height: 32px;
     }
 
-    /* 도움말 버튼 위치 조정 - TV 좌측 정렬 */
-    .help-button {
-        left: calc((100vw - min(800px, 70vh)) / 2);
-    }
-
-    /* 사운드 토글 버튼 위치 조정 - 도움말 버튼 옆 */
-    .audio-toggle-button {
-        left: calc((100vw - min(800px, 70vh)) / 2 + 40px);
-    }
-
     .initial-screen,
     .remote-control {
-        /* 태블릿/PC: 리모컨/초기화면은 가로 800px 고정 (버튼 깨짐 방지) */
-        width: 800px;
+        /* 태블릿/PC: 최대 800px, 기본 100% (iPad 대응) */
+        width: 100%;
         max-width: 800px;
-        padding: 20px 40px;
+        padding: 16px 12px;
+        /* Aggressively reduced padding to fit content */
     }
 
     .remote-header {
-        margin-bottom: 16px;
+        margin-bottom: 10px;
     }
 
     .name-input {
-        margin-bottom: 16px;
-        padding: 12px;
+        margin-bottom: 10px;
+        padding: 10px;
     }
 
     .number-pad {
-        grid-template-columns: repeat(12, 1fr);
-        gap: 8px;
-        margin-bottom: 16px;
+        /* Prevent overflow by forcing min-width 0 */
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: 2px;
+        /* Tighter gap */
+        margin-bottom: 10px;
     }
 
     .number-btn {
-        font-size: 1.2rem;
-        aspect-ratio: 1.2;
+        font-size: 1.1rem;
+        /* Slightly smaller */
+        aspect-ratio: 1.8;
+        /* Much shorter (was 1.2) - wider buttons */
         border-radius: 12px;
     }
 
     .number-btn.channel-change {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         line-height: 1.2;
         order: 3;
     }
@@ -1490,7 +1563,8 @@ body {
     }
 
     .btn-next {
-        padding: 14px;
+        padding: 12px;
+        /* Reduced from 14px */
     }
 
     .result-thumbnail {
@@ -1501,8 +1575,10 @@ body {
 
 @media (max-width: 640px) {
     body {
-        padding: 8px 15px 0 15px;
+        padding: 8px 0 0 0;
     }
+
+    /* .game-header styling removed for mobile */
 
     .logo img {
         height: 65px;
@@ -1628,4 +1704,418 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+/* ==================== 브릿지 뷰 (Intro Screen) ==================== */
+.bridge-screen {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #f4f1ea;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.bridge-screen.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+}
+
+.bridge-content {
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+}
+
+.bridge-logo img {
+    width: 120px;
+    height: auto;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    animation: floatLogo 3s ease-in-out infinite;
+}
+
+@keyframes floatLogo {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.bridge-title h1 {
+    font-size: 2rem;
+    color: #191f28;
+    margin: 0 0 10px 0;
+    font-weight: 800;
+}
+
+.bridge-title p {
+    font-size: 1rem;
+    color: #4e5968;
+    margin: 0;
+}
+
+.btn-bridge-start {
+    width: 100%;
+    padding: 18px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    background: #3182f6;
+    color: white;
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 4px 12px rgba(49, 130, 246, 0.3);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-bridge-start:hover {
+    background: #1b64da;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(49, 130, 246, 0.4);
+}
+
+.btn-bridge-start:active {
+    transform: translateY(0);
+}
+
+.bridge-rating {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    background: #fff;
+    border-radius: 50px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.rating-badge-small {
+    width: 24px;
+    height: 24px;
+    background: #10b981;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.6rem;
+    font-weight: 800;
+}
+
+.rating-text-small {
+    font-size: 0.85rem;
+    color: #4e5968;
+    font-weight: 600;
+}
+
+.bridge-footer {
+    position: absolute;
+    bottom: calc(20px + env(safe-area-inset-bottom));
+    color: #b0b8c1;
+    font-size: 0.75rem;
+}
+
+/* ==================== TDS Style Overrides ==================== */
+:root {
+    --tds-grey-100: #f2f4f6;
+    --tds-blue-500: #3182f6;
+    --tds-text-primary: #191f28;
+}
+
+.name-input,
+select,
+.custom-dropdown-button {
+    background-color: var(--tds-grey-100) !important;
+    border: none !important;
+    border-radius: 12px !important;
+    color: var(--tds-text-primary) !important;
+    padding: 14px 16px !important;
+    font-size: 1rem !important;
+    transition: box-shadow 0.2s;
+}
+
+.name-input:focus,
+select:focus {
+    box-shadow: 0 0 0 2px var(--tds-blue-500) inset !important;
+    outline: none !important;
+}
+
+.btn {
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+}
+
+/* Custom Alert (TDS Dialog Style) */
+.custom-alert-content {
+    border-radius: 20px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
+}
+
+.custom-alert-btn {
+    border-radius: 10px !important;
+    background-color: var(--tds-blue-500) !important;
+}
+
+/* ==================== Layout Fix: Bottom Sheet Style (Flex) ==================== */
+.initial-screen,
+.remote-control {
+    width: 100% !important;
+    max-width: 800px !important;
+    margin: 0 auto !important;
+    /* Center on large screens */
+    margin-top: auto !important;
+    /* Push to bottom in flex container */
+
+    border-radius: 24px 24px 0 0 !important;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+
+    background: #ffffff !important;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1) !important;
+    z-index: 100 !important;
+
+    /* Ensure it doesn't overlap or float */
+    position: relative !important;
+    flex-shrink: 0 !important;
+}
+
+body {
+    /* Ensure full height for flex push */
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding-bottom: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: hidden;
+    /* portrait 기본: 스크롤 없음 */
+}
+
+
+/* ==================== Landscape Layout (Fold 5 & Tablets) ==================== */
+@media (orientation: landscape) {
+    body {
+        /* Landscape Mode: Reduce vertical padding to maximize space */
+        padding-top: max(10px, env(safe-area-inset-top));
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
+        flex-direction: row !important;
+        /* Body becomes row */
+        align-items: stretch;
+        overflow-y: auto;
+        /* landscape에서는 스크롤 허용 */
+    }
+
+    .main-layout {
+        flex-direction: row !important;
+        /* Split Game and Controls side-by-side */
+        align-items: center !important;
+        gap: 0;
+        height: 100vh;
+        /* Force full height */
+        width: 100%;
+        position: relative;
+    }
+
+    .game-area {
+        flex: 1;
+        /* TV Area takes more space */
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        /* Center horizontally */
+
+        /* FIX: Enable Scroll and prevent top-clipping */
+        overflow-y: auto !important;
+        justify-content: safe center;
+        /* Center TV vertically if it fits, else top-align */
+
+        padding: 20px;
+        position: relative;
+        /* Context for overlays */
+    }
+
+    /* FIX: Landscape Header - unified bar above TV */
+    .game-header {
+        position: relative !important;
+        width: 100%;
+        /* Match TV width logic */
+        max-width: calc(70vh * 16 / 11) !important;
+
+        /* Unified Layout: Flex Center for Logo, Absolute Left for Buttons */
+        display: flex;
+        justify-content: center;
+        /* Center Logo */
+        align-items: center;
+
+        margin-bottom: 10px;
+        padding: 0;
+        /* Padding removed to match TV width exactly */
+        flex: 0 0 auto;
+        /* Don't grow/shrink */
+    }
+
+    .header-buttons {
+        /* Absolute positioning relative to the header container */
+        position: absolute;
+        left: 0;
+        /* Align to exact edge of TV */
+        top: 50%;
+        transform: translateY(-50%);
+
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        z-index: 100;
+    }
+
+    /* Reset Buttons to Static for Header Flow - REMOVED (Now using Absolute) */
+    .help-button {
+        position: relative !important;
+        /* Back to relative (inside absolute wrapper) */
+        margin: 0 !important;
+        transform: none !important;
+        z-index: auto !important;
+    }
+
+    .audio-toggle-button {
+        position: relative !important;
+        margin: 0 !important;
+        transform: none !important;
+        z-index: auto !important;
+    }
+
+    /* Reset Logo to Static for Header Flow */
+    .logo {
+        position: static !important;
+        margin: 0 !important;
+        transform: scale(0.8) !important;
+        /* Keep slight shrink */
+        z-index: auto !important;
+    }
+
+    /* Ensure Logo Image fits nicely */
+    .logo img {
+        height: 48px !important;
+        /* Reduce height in landscape header */
+    }
+
+    .controls-area {
+        flex: 0 0 320px;
+        /* Fixed width for controls */
+        height: 100%;
+        overflow-y: auto;
+        /* Scrollable controls */
+        justify-content: center;
+        /* Center controls vertically */
+        padding: 20px;
+
+        /* Glassmorphism background for controls panel */
+        background: rgba(255, 255, 255, 0.9);
+        border-left: 1px solid rgba(0, 0, 0, 0.1);
+        box-shadow: -5px 0 20px rgba(0, 0, 0, 0.05);
+        z-index: 50;
+    }
+
+    .remote-control,
+    .initial-screen {
+        width: 100% !important;
+        max-width: 100% !important;
+        /* Fill panel */
+        margin-top: 0 !important;
+        padding-bottom: 20px !important;
+        border-radius: 20px !important;
+        box-shadow: none !important;
+        background: transparent !important;
+    }
+
+    /* FIX: Force 3-column grid for landscape */
+    .number-pad {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 8px !important;
+    }
+
+    .number-btn {
+        aspect-ratio: auto !important;
+        height: 50px;
+        order: unset !important;
+    }
+
+    /* Adjust specific button orders for 3-col grid */
+    #btn0 {
+        order: 10 !important;
+    }
+
+    #btnBackspace {
+        order: 9 !important;
+    }
+
+    .number-btn.channel-change {
+        order: 11 !important;
+        grid-column: auto !important;
+        height: auto !important;
+    }
+
+    /* Optimize TV size: Strict constraints to fit Soundbar */
+    .tv-container {
+        /* FIX: Use width-driven sizing with height constraint override */
+        width: 100% !important;
+
+        /* Calculate max-width based on max-height (70vh) and aspect ratio (16:11) */
+        /* 70vh * (16/11) approx 101.8vh. We limit width so height matches 70vh max */
+        max-width: calc(70vh * 16 / 11) !important;
+
+        /* Fallback for safety */
+        height: auto !important;
+
+        /* Restore correct Aspect Ratio */
+        aspect-ratio: 16/11 !important;
+
+        margin: 0 !important;
+        flex: 0 1 auto;
+        justify-content: center;
+    }
+
+    .tv-screen {
+        width: 100%;
+        height: 100%;
+        aspect-ratio: 16/11 !important;
+    }
+
+    /* Adjust Wall Decoration (Soundbar) */
+    .wall-decoration-area {
+        width: 100%;
+        /* Soundbar width should match TV or be slightly wider/narrower */
+        /* Let's match TV's constrained width */
+        max-width: calc(70vh * 16 / 11) !important;
+
+        position: relative;
+        margin-top: 20px !important;
+
+        flex: 0 0 auto;
+
+        /* Ensure it's visible */
+        z-index: 10;
+
+        /* Adjust positioning if needed */
+        display: flex;
+        justify-content: center;
+    }
+
+    .soundbar {
+        width: 100%;
+    }
 }
