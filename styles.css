@@ -1244,6 +1244,7 @@ body {
 
 .name-input {
     flex: 1;
+    min-width: 0;
     /* Take up remaining space */
     height: 48px;
     /* Force match button height */
@@ -1696,9 +1697,7 @@ box-shadow: 0 4px 12px rgba(49, 130, 246, 0.3);
         border-radius: 12px;
     }
 
-    .number-btn.channel-change {
-        font-size: 0.85rem;
-        line-height: 1.2;
+    #btnRandom {
         order: 3;
     }
 
@@ -2170,13 +2169,27 @@ body {
         /* Scrollable controls */
         justify-content: center;
         /* Center controls vertically */
-        padding: 20px;
+        padding: 16px;
+        /* Reduced from 20px to prevent overflow */
 
         /* Glassmorphism background for controls panel */
         background: rgba(255, 255, 255, 0.9);
         border-left: 1px solid rgba(0, 0, 0, 0.1);
         box-shadow: -5px 0 20px rgba(0, 0, 0, 0.05);
         z-index: 50;
+    }
+
+    /* FIX: Prevent Input Overflow in Landscape */
+    .input-row {
+        width: 100%;
+        flex-wrap: nowrap;
+    }
+
+    .name-input {
+        min-width: 0;
+        /* Allow shrinking below content size */
+        flex: 1;
+        width: auto;
     }
 
     .remote-control,
@@ -2204,18 +2217,18 @@ body {
     }
 
     /* Adjust specific button orders for 3-col grid */
+    /* Removed explicit order to follow HTML source: Backspace, 0, Random */
     #btn0 {
-        order: 10 !important;
+        order: unset !important;
     }
 
     #btnBackspace {
-        order: 9 !important;
+        order: unset !important;
     }
 
     .number-btn.channel-change {
-        order: 11 !important;
-        grid-column: auto !important;
-        height: auto !important;
+        /* Obsolete selector, removing styles */
+        display: none;
     }
 
     /* Optimize TV size: Strict constraints to fit Soundbar */
