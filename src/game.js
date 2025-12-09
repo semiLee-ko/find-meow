@@ -57,10 +57,24 @@ export async function initializeGame() {
     window.changeChannel = changeChannel;
     window.confirmPlayer = confirmPlayer;
     window.resetGame = resetGame;
+    window.randomChannel = randomChannel;
     window.openInfoPopup = openInfoPopup;
     window.closeInfoPopup = closeInfoPopup;
     window.showCustomAlert = showCustomAlert;
     window.closeCustomAlert = closeCustomAlert;
+    window.showCustomAlert = showCustomAlert;
+    window.closeCustomAlert = closeCustomAlert;
+
+    // 초기 화면 설정 (기본 이미지 + 자막)
+    const tvImage = document.getElementById('tvImage');
+    const tvSubtitle = document.getElementById('tvSubtitle');
+
+    tvImage.src = 'images/basicCn.png';
+    tvImage.style.display = 'block';
+
+    if (tvSubtitle) {
+        tvSubtitle.classList.remove('hidden');
+    }
 }
 
 // ==================== 이름 유효성 검사 ====================
@@ -130,11 +144,22 @@ function updatePlayerInfo() {
     playerInfo.textContent = `플레이어 ${currentPlayerIndex + 1} / ${totalPlayers}`;
 }
 
-// ==================== 리모컨 기능 ====================
+let isInteractionBlocked = false;
+
+// ==================== 숫자 패드 입력 처리 ====================
 export function pressNumber(num) {
-    const btn = window.event ? window.event.target : event.target;
+    if (isInteractionBlocked) return; // Block input during animation
+
+    const btn = document.getElementById(`btn${num}`);
     btn.classList.add('pressed');
     setTimeout(() => btn.classList.remove('pressed'), 200);
+
+    // Click Sound
+    const clickSound = document.getElementById('clickSound');
+    if (clickSound) {
+        clickSound.currentTime = 0;
+        playSound(clickSound);
+    }
 
     if (currentChannel.length === 0 && num === '0') {
         return;
@@ -147,8 +172,90 @@ export function pressNumber(num) {
 }
 
 export function backspace() {
+    if (isInteractionBlocked) return;
     currentChannel = currentChannel.slice(0, -1);
     updateChannelDisplay();
+}
+
+
+export function randomChannel() {
+    if (isInteractionBlocked) return;
+
+    // 1. Block interaction (keep buttons enabled visually)
+    isInteractionBlocked = true;
+
+    // 2. Clear current
+    currentChannel = '';
+    updateChannelDisplay();
+
+    // 3. Generate Random Number
+    const randomNum = Math.floor(Math.random() * 999) + 1;
+    const targetChannel = String(randomNum).padStart(3, '0');
+    const digits = targetChannel.split('');
+
+    // 4. Animate Sequence
+    digits.forEach((digit, index) => {
+        setTimeout(() => {
+            const btnId = `btn${digit}`;
+            const btn = document.getElementById(btnId);
+
+            if (btn) {
+                // Visual Press Effect
+                btn.classList.add('pressed');
+                setTimeout(() => btn.classList.remove('pressed'), 200);
+
+                // Add Paw Print Overlay
+                const paw = document.createElement('div');
+                paw.className = 'button-paw-print';
+                const rotation = (Math.random() - 0.5) * 40;
+                paw.style.setProperty('--paw-rotation', `${rotation}deg`);
+                btn.appendChild(paw);
+
+                setTimeout(() => paw.remove(), 600);
+            }
+
+            currentChannel += digit;
+            updateChannelDisplay();
+
+            const clickSound = document.getElementById('clickSound');
+            if (clickSound) {
+                clickSound.currentTime = 0;
+                playSound(clickSound);
+            }
+
+        }, index * 600); // 600ms gap (Slower)
+    });
+
+    // 5. Animate Channel Change Button & Finalize
+    setTimeout(() => {
+        const actionBtn = document.getElementById('btnChannelAction');
+        if (actionBtn) {
+            // Visual Press
+            actionBtn.style.transform = 'translateY(2px)';
+            setTimeout(() => actionBtn.style.transform = '', 200);
+
+            // Paw Print on Action Button
+            const paw = document.createElement('div');
+            paw.className = 'button-paw-print';
+            const rotation = (Math.random() - 0.5) * 40;
+            paw.style.setProperty('--paw-rotation', `${rotation}deg`);
+            actionBtn.appendChild(paw);
+            setTimeout(() => paw.remove(), 800); // Matches CSS duration
+
+            const clickSound = document.getElementById('clickSound');
+            if (clickSound) {
+                clickSound.currentTime = 0;
+                playSound(clickSound);
+            }
+        }
+
+        // Execute Change
+        setTimeout(() => {
+            isInteractionBlocked = false;
+            changeChannel();
+        }, 500);
+
+    }, digits.length * 600); // Adjust total wait time
 }
 
 function updateChannelDisplay() {
@@ -164,6 +271,8 @@ function updateChannelDisplay() {
 
 // ==================== 채널 변경 ====================
 export function changeChannel() {
+    if (isInteractionBlocked) return;
+
     const channelNum = parseInt(currentChannel);
 
     if (!currentChannel || channelNum < 1 || channelNum > 999) {
@@ -190,6 +299,12 @@ export function changeChannel() {
     const tvImage = document.getElementById('tvImage');
     tvImage.src = `images/channels/${currentImage}`;
     tvImage.style.display = 'block';
+
+    // 자막 숨기기
+    const tvSubtitle = document.getElementById('tvSubtitle');
+    if (tvSubtitle) {
+        tvSubtitle.classList.add('hidden');
+    }
 
     tvImage.onload = () => {
         displayCatScanAnimation(currentImage);
@@ -338,7 +453,17 @@ export function confirmPlayer() {
         currentChannel = '';
         currentImage = '';
 
-        document.getElementById('tvImage').style.display = 'none';
+        const tvImage = document.getElementById('tvImage');
+        tvImage.onload = null; // Prevent previous onload from firing
+        tvImage.style.display = 'block';
+        tvImage.src = 'images/basicCn.png'; // Show default standby image
+
+        // 자막 표시 (기본 화면 상태)
+        const tvSubtitle = document.getElementById('tvSubtitle');
+        if (tvSubtitle) {
+            tvSubtitle.classList.remove('hidden');
+        }
+
         updatePlayerInfo();
         setDefaultPlayerName();
 
@@ -456,8 +581,15 @@ function performGameReset() {
     document.getElementById('initialScreen').classList.remove('slide-out', 'hidden');
 
     const tvImage = document.getElementById('tvImage');
-    tvImage.style.display = 'none';
-    tvImage.src = '';
+    tvImage.style.display = 'block'; // Reset to visible for basicCn
+    tvImage.src = 'images/basicCn.png';
+
+    // 자막 다시 표시
+    const tvSubtitle = document.getElementById('tvSubtitle');
+    if (tvSubtitle) {
+        tvSubtitle.classList.remove('hidden');
+    }
+
     tvImage.onload = null;
     tvImage.onerror = null;
 
@@ -484,7 +616,7 @@ function performGameReset() {
 
 // ==================== 버튼 활성화/비활성화 ====================
 function setNumberPadEnabled(enabled) {
-    const buttons = ['btn1', 'btn2', 'btn3', 'btn4', 'btn5', 'btn6', 'btn7', 'btn8', 'btn9', 'btn0', 'btnBackspace', 'btnChannel'];
+    const buttons = ['btn1', 'btn2', 'btn3', 'btn4', 'btn5', 'btn6', 'btn7', 'btn8', 'btn9', 'btn0', 'btnBackspace', 'btnRandom', 'btnChannelAction'];
     buttons.forEach(id => {
         const btn = document.getElementById(id);
         if (btn) btn.disabled = !enabled;
@@ -496,11 +628,14 @@ function setNextButtonEnabled(enabled) {
 }
 
 function updateNextButtonText() {
+    // Button is now an arrow icon, so we don't change text content.
+    // We could change aria-label or color if needed.
     const btnNext = document.getElementById('btnNext');
     if (currentPlayerIndex === totalPlayers - 1) {
-        btnNext.textContent = '결과 확인';
+        btnNext.setAttribute('aria-label', '결과 확인');
+        // Optional: Change icon to Checkmark?
     } else {
-        btnNext.textContent = '다음';
+        btnNext.setAttribute('aria-label', '다음');
     }
 }
 

@@ -850,6 +850,45 @@ body {
 
 }
 
+.tv-subtitle {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 30px;
+    margin-bottom: 22px;
+    background: linear-gradient(to right, rgba(50, 62, 255, 0.8) 0%, rgba(50, 62, 255, 0) 100%);
+    color: #fff;
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    white-space: nowrap;
+    z-index: 201;
+    /* Above brand (200) */
+}
+
+.tv-subtitle span {
+    display: inline-block;
+    padding-left: 100%;
+    animation: marquee 8s linear infinite;
+}
+
+.tv-subtitle.hidden {
+    display: none;
+}
+
+@keyframes marquee {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    100% {
+        transform: translate(-100%, 0);
+    }
+}
+
 .channel-display {
     position: absolute;
     top: 15px;
@@ -1170,7 +1209,6 @@ body {
 
 .remote-control.slide-in {
     display: block;
-    animation: slideUp 0.4s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 @keyframes slideUp {
@@ -1196,72 +1234,191 @@ body {
     font-weight: 500;
 }
 
-.name-input {
+.input-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
     width: 100%;
-    padding: 8px;
-    border: none;
+}
+
+.name-input {
+    flex: 1;
+    /* Take up remaining space */
+    height: 48px;
+    /* Force match button height */
+    padding: 0 18px;
+    /* Remove vertical padding, rely on flex centering or line-height if needed, but flex row parent aligns items. Input text vertically centers usually. */
+    /* Actually for text input, careful with padding vs height. */
+    /* Better: keep padding but ensure box-sizing handles it. */
+    /* Let's try explicit height and margin 0 */
+    padding: 10px 18px;
+    margin: 0;
+    border: 1px solid #e5e8eb;
     border-radius: 12px;
-    font-size: 0.95rem;
-    margin-bottom: 8px;
-    text-align: center;
-    background: #f2f4f6;
-    color: #333d4b;
-    font-weight: 600;
-    transition: background 0.2s;
+    font-size: 1.1rem;
+    outline: none;
+    transition: all 0.2s ease;
+    background: #f9fafb;
+    color: #333;
+    box-sizing: border-box;
 }
 
 .name-input:focus {
-    outline: none;
-    background: #e5e8eb;
+    border-color: #3182f6;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(49, 130, 246, 0.1);
 }
 
-.name-input::placeholder {
-    color: #b0b8c1;
+.btn-next-arrow {
+    width: 48px;
+    height: 48px;
+    margin: 0;
+    border: none;
+    background: #3182f6;
+    border-radius: 12px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.btn-next-arrow:disabled {
+    background: #e5e8eb;
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.btn-next-arrow:not(:disabled):hover {
+    background: #1b64da;
+    transform: translateX(2px);
+}
+
+.btn-next-arrow svg {
+    width: 24px;
+    height: 24px;
 }
 
 .number-pad {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 5px;
-    margin-bottom: 8px;
+    gap: 12px;
+    margin-bottom: 24px;
 }
 
 .number-btn {
-    aspect-ratio: 2.2;
-    background: #ffffff;
-    border: 1px solid #e5e8eb;
+    position: relative;
+    /* For paw print positioning */
+    aspect-ratio: 1.5;
+    background: #f2f4f6;
+    border: none;
     border-radius: 12px;
-    font-size: 1.1rem;
+    font-size: 1.5rem;
     font-weight: 600;
-    color: #191f28;
+    color: #333;
     cursor: pointer;
-    transition: all 0.1s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    transition: all 0.1s ease;
+    /* overflow: hidden; Removed to ensure visibility */
 }
 
-.number-btn:hover {
-    background-color: #f9fafb;
-}
-
-.number-btn:active,
-.number-btn.pressed {
+.number-btn:active {
+    background: #e5e8eb;
     transform: scale(0.96);
 }
 
-.number-btn.channel-change {
-    font-size: 0.9rem;
-    background-color: #3182f6;
+.button-paw-print {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    /* Increased from 80% */
+    height: 100%;
+    transform: translate(-50%, -50%) scale(0.5);
+    background-image: url('images/paw-print.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0;
+    pointer-events: none;
+    animation: pawPress 0.8s ease-out forwards;
+    /* Slowed down from 0.5s */
+    z-index: 1000;
+}
+
+@keyframes pawPress {
+    0% {
+        transform: translate(-50%, -50%) rotate(var(--paw-rotation)) scale(3.0);
+        opacity: 0;
+    }
+
+    15% {
+        transform: translate(-50%, -50%) rotate(var(--paw-rotation)) scale(2.0);
+        /* Landed (2x size) */
+        opacity: 1;
+    }
+
+    85% {
+        transform: translate(-50%, -50%) rotate(var(--paw-rotation)) scale(2.0);
+        /* Stay */
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(-50%, -50%) rotate(var(--paw-rotation)) scale(2.2);
+        /* Lift off */
+        opacity: 0;
+    }
+}
+
+.number-btn.random-btn {
+    background: #e1f2ff;
+    color: #3182f6;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.number-btn.random-btn:active {
+    background: #cfe8ff;
+}
+
+.btn-channel-action {
+    position: relative;
+    /* For paw print */
+    width: 100%;
+    padding: 16px;
+    background: #3182f6;
     color: white;
     border: none;
-    box-shadow: 0 2px 6px rgba(49, 130, 246, 0.3);
+    border-radius: 16px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(49, 130, 246, 0.3);
 }
 
-.number-btn.channel-change:hover {
-    background-color: #1b64da;
+.btn-channel-action:disabled {
+    background: #e5e8eb;
+    color: #9ca3af;
+    cursor: not-allowed;
+    box-shadow: none;
 }
 
+.btn-channel-action:not(:disabled):hover {
+    background: #1b64da;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(49, 130, 246, 0.4);
+}
+
+.btn-channel-action:not(:disabled):active {
+    transform: translateY(0);
+}
+
+/* Hide old styles if any (cleanup) */
+/* .btn-next, .name-input old styles etc are overwritten above or here */
 #btnBackspace {
     background-color: #f2f4f6;
     color: #4e5968;
@@ -1273,18 +1430,10 @@ body {
     cursor: not-allowed;
 }
 
-.btn-next {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 16px;
-    font-size: 1.05rem;
-    font-weight: 700;
-    background-color: #3182f6;
-    color: white;
-    cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 4px 12px rgba(49, 130, 246, 0.3);
+color: white;
+cursor: pointer;
+transition: all 0.2s;
+box-shadow: 0 4px 12px rgba(49, 130, 246, 0.3);
 }
 
 .btn-next:hover:not(:disabled) {
@@ -1846,6 +1995,7 @@ select,
     padding: 14px 16px !important;
     font-size: 1rem !important;
     transition: box-shadow 0.2s;
+    margin: 0;
 }
 
 .name-input:focus,
