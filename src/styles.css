@@ -2316,9 +2316,9 @@ body {
 
 /* Rating Overlay (Fade Out Effect) */
 .rating-overlay {
-    position: fixed;
-    top: 100px;
-    right: 35px;
+    position: absolute;
+    top: 20px;
+    right: 20px;
     width: 61px;
     height: 70px;
     background-image: url('./gameLv.png');
@@ -2335,7 +2335,7 @@ body {
 .rating-overlay.active {
     opacity: 1;
     transform: scale(1);
-    animation: fadeOutRating 5s forwards;
+    animation: fadeOutRating 3s forwards;
 }
 
 @keyframes fadeOutRating {

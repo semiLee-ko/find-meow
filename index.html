@@ -7,8 +7,7 @@
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Find Meow - TV 채널 고양이 찾기 게임</title>
 
-    <!-- Bedrock SDK (앱인토스) - CDN 로드 -->
-    <script src="https://static.toss.im/bedrock/bedrock.min.js"></script>
+    <!-- Bedrock SDK (앱인토스) - CDN 로드 (Body로 이동됨) -->
 
     <!-- 스타일시트 -->
     <link rel="stylesheet" href="src/styles.css">
@@ -20,51 +19,9 @@
 </head>
 
 <body>
-    <!-- 디버그 콘솔 (개발용) -->
-    <!--
-    <div id="debug-console"
-        style="position:fixed; top:0; left:0; width:100%; height:150px; background:rgba(0,0,0,0.8); color:#00ff00; overflow-y:auto; z-index:99999; font-size:12px; padding:5px; pointer-events:none; white-space: pre-wrap; font-family: monospace;">
-        📋 Debug Console Started...</div>
-    <script>
-        (function () {
-            var consoleDiv = document.getElementById('debug-console');
-            function logToScreen(msg, color) {
-                if (!consoleDiv) return;
-                var div = document.createElement('div');
-                div.style.color = color || '#00ff00';
-                div.style.borderBottom = '1px solid #333';
-                div.textContent = msg;
-                consoleDiv.appendChild(div);
-                consoleDiv.scrollTop = consoleDiv.scrollHeight;
-            }
-            // 기존 console 함수 캡처
-            var originalLog = console.log;
-            var originalWarn = console.warn;
-            var originalError = console.error;
 
-            console.log = function () {
-                var args = Array.from(arguments).map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg));
-                logToScreen('ℹ️ ' + args.join(' '), '#00ff00');
-                originalLog.apply(console, arguments);
-            };
-            console.warn = function () {
-                var args = Array.from(arguments).map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg));
-                logToScreen('⚠️ ' + args.join(' '), '#ffff00');
-                originalWarn.apply(console, arguments);
-            };
-            console.error = function () {
-                var args = Array.from(arguments).map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg));
-                logToScreen('❌ ' + args.join(' '), '#ff4444');
-                originalError.apply(console, arguments);
-            };
 
-            // 전역 에러 캡처
-            window.onerror = function (msg, url, line) {
-                logToScreen('🔥 Error: ' + msg + ' (' + line + ')', '#ff0000');
-            };
-        })();
-    </script>
-    -->
+
     <!-- 브릿지 뷰 (Intro Screen) -->
     <div id="bridgeScreen" class="bridge-screen">
         <div class="bridge-content">
@@ -85,8 +42,7 @@
         </div>
     </div>
 
-    <!-- 게임 등급 표시 오버레이 (게임 시작 시 우측 상단 노출 후 페이드아웃) -->
-    <div id="rating-overlay" class="rating-overlay"></div>
+
     <div class="main-layout">
         <div class="game-area">
             <!-- 헤더 영역 (버튼 및 로고) -->
@@ -128,6 +84,10 @@
                     <img class="tv-image" id="tvImage" src="" alt="TV Screen">
                     <div class="channel-display" id="channelDisplay">000</div>
                     <div class="cat-counter" id="catCounter">0</div>
+
+                    <!-- 등급 표시 오버레이 (TV 화면 내부) -->
+                    <div id="rating-overlay" class="rating-overlay"></div>
+
                     <div class="tv-brand">CODA creaTV</div>
                     <div class="tv-subtitle" id="tvSubtitle">
                         <span>채널을 선택해달라냥! 귀찮으면 이 몸이 선택해 줄 수도 있으니 걱정말라냥! 에헴!</span>

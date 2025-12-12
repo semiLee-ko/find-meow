@@ -1,6 +1,7 @@
 // Bedrock SDK 초기화 및 앱 설정
 import { config } from './config.js';
 import { resetGame } from './game.js';
+import { GoogleAdMob } from '@apps-in-toss/web-framework';
 
 let isBedrockInitialized = false;
 
@@ -8,84 +9,71 @@ let isBedrockInitialized = false;
  * Bedrock SDK 초기화
  */
 export async function initializeBedrock() {
-    if (isBedrockInitialized) {
-        console.log('Bedrock already initialized');
-        return;
-    }
+    if (isBedrockInitialized) return;
 
-    // [DEBUG] 환경 진단 로그 (화면 출력)
-    console.log('--- Environment Check ---');
+    // [DEBUG] 환경 진단 로그
+    console.log('--- Environment Check (Framework) ---');
     console.log('UA:', navigator.userAgent);
-    console.log('Bedrock:', !!window.Bedrock);
-    console.log('Toss:', !!window.Toss);
-    console.log('BedrockNative:', !!window.BedrockNative);
-    console.log('Location:', document.location.href);
+    const supported = GoogleAdMob.loadAppsInTossAdMob.isSupported();
+    console.log('GoogleAdMob Supported:', supported);
     console.log('-------------------------');
 
-    // 로컬 개발 환경을 위한 Mock SDK 설정
-    if (!window.Bedrock) {
-        console.warn('⚠️ Bedrock SDK not found. Initializing Mock SDK for development.');
+    if (!supported) {
+        console.warn('⚠️ GoogleAdMob not supported. Initializing Mock SDK.');
         setupMockBedrock();
+    } else {
+        console.log('✅ GoogleAdMob logic enabled.');
     }
 
-    try {
-        const { Bedrock } = window;
+    // Framework handles init implicitly or via other modules (Granite starts automatically)
+    // We just mark initialized here.
+    isBedrockInitialized = true;
+    console.log('✅ Bedrock (Framework) initialized');
 
-        // Bedrock 초기화
-        await Bedrock.init({
-            appKey: config.APPENTOS_APP_KEY,
-            env: config.ENV
-        });
-
-        console.log('✅ Bedrock initialized successfully');
-        isBedrockInitialized = true;
-
-        // 내비게이션 바 설정
-        setupNavigationBar();
-
-        // 오디오 포커스 감지 설정
-        setupAudioFocusListener();
-
-    } catch (error) {
-        console.error('❌ Bedrock initialization failed:', error);
-        console.warn('Running in development mode with limited Bedrock features');
-    }
+    // 내비게이션 바 설정 (if needed via framework, but keeping legacy window check for safe measure or assume handled)
+    setupNavigationBar();
+    setupAudioFocusListener();
 }
 
-// 전역 함수로 내보내기
+// ... existing exports ...
 window.resetGame = resetGame;
 window.showExitConfirmation = showExitConfirmation;
 
-// ==================== 광고 (AdMob 2.0 - Window Usage) ====================
+// ==================== 광고 (AdMob 2.0 - Framework Usage) ====================
 let isAdLoaded = false;
+let adCleanup = null;
 
 /**
- * 전면 광고 로드 준비 (Window Interface)
+ * 전면 광고 로드 준비
  */
 export async function prepareInterstitialAd() {
-    if (!window.Bedrock) {
-        console.warn('⚠️ window.Bedrock missing');
+    if (GoogleAdMob.loadAppsInTossAdMob.isSupported() !== true) {
+        // Fallback to Window Mock if set up, or just log
+        if (window.Bedrock && window.Bedrock.loadAppsInTossAdMob) {
+            // Mock Bedrock path
+            console.log('Using Mock Bedrock for Ad Load');
+            window.Bedrock.loadAppsInTossAdMob({
+                options: { adGroupId: config.ADMOB_INTERSTITIAL_ID },
+                onEvent: (evt) => { if (evt.type === 'loaded') isAdLoaded = true; }
+            });
+            return;
+        }
+        console.warn('⚠️ AdMob not supported in this environment');
         return;
     }
 
-    // 메서드 존재 확인
-    if (!window.Bedrock.loadAppsInTossAdMob) {
-        console.warn('⚠️ loadAppsInTossAdMob not found on window.Bedrock');
-        return;
-    }
-
-    console.log('⏳ Loading Interstitial Ad (Window)...');
+    console.log('⏳ Loading Interstitial Ad (Framework)...');
 
     try {
-        const cleanup = window.Bedrock.loadAppsInTossAdMob({
+        const cleanup = GoogleAdMob.loadAppsInTossAdMob({
             options: {
                 adGroupId: config.ADMOB_INTERSTITIAL_ID
             },
             onEvent: (event) => {
                 if (event.type === 'loaded') {
                     isAdLoaded = true;
-                    console.log('✅ Interstitial Ad Loaded (Window)');
-                    cleanup && cleanup();
+                    console.log('✅ Interstitial Ad Loaded (Framework)');
+                    adCleanup = cleanup; // Save cleanup to call later if needed
                 }
             },
             onError: (error) => {
@@ -100,7 +88,7 @@ export async function prepareInterstitialAd() {
 }
 
 /**
- * 전면 광고 표시 (Window Interface)
+ * 전면 광고 표시
  */
 export function showInterstitialAd() {
     return new Promise((resolve) => {
@@ -111,15 +99,28 @@ export function showInterstitialAd() {
             return;
         }
 
-        if (!window.Bedrock || !window.Bedrock.showAppsInTossAdMob) {
-            console.warn('⚠️ showAppsInTossAdMob not supported');
+        if (GoogleAdMob.showAppsInTossAdMob.isSupported() !== true) {
+            // Mock Path
+            if (window.Bedrock && window.Bedrock.showAppsInTossAdMob) {
+                window.Bedrock.showAppsInTossAdMob({
+                    options: { adGroupId: config.ADMOB_INTERSTITIAL_ID },
+                    onEvent: (e) => {
+                        if (e.type === 'dismissed') {
+                            isAdLoaded = false;
+                            prepareInterstitialAd();
+                            resolve();
+                        }
+                    }
+                });
+                return;
+            }
             resolve();
             return;
         }
 
         try {
-            console.log('📺 Showing Interstitial Ad (Window)...');
-            window.Bedrock.showAppsInTossAdMob({
+            console.log('📺 Showing Interstitial Ad (Framework)...');
+            GoogleAdMob.showAppsInTossAdMob({
                 options: {
                     adGroupId: config.ADMOB_INTERSTITIAL_ID
                 },
@@ -132,7 +133,7 @@ export function showInterstitialAd() {
                         case 'dismissed':
                             console.log('광고 닫힘');
                             isAdLoaded = false;
-                            prepareInterstitialAd();
+                            prepareInterstitialAd(); // Preload next
                             resolve();
                             break;
                         case 'failedToShow':
@@ -153,56 +154,39 @@ export function showInterstitialAd() {
     });
 }
 
-
 /**
  * Mock Bedrock SDK 설정 (로컬 테스트용)
  */
 function setupMockBedrock() {
+    // Keep existing mock implementation but only populate window.Bedrock for fallback
+    // The framework calls won't use this, but our fallback logic above might.
+    if (window.Bedrock) return;
+
     window.Bedrock = {
         init: () => Promise.resolve(),
-        exit: () => {
-            console.log('🛑 [Mock] Bedrock.exit() called');
-            const confirmed = confirm('앱 종료 (Mock)');
-        },
-        // Mock Ads (Options + Callbacks)
+        exit: () => console.log('Mock Exit'),
         loadAppsInTossAdMob: (params) => {
             console.log('📦 [Mock] loadAppsInTossAdMob:', params);
-            // Simulate callback after delay
-            setTimeout(() => {
-                params.onEvent?.({ type: 'loaded', data: {} });
-            }, 1000);
-            // Return cleanup function
-            return () => console.log('[Mock] cleanup called');
+            setTimeout(() => params.onEvent?.({ type: 'loaded', data: {} }), 1000);
+            return () => { };
         },
         showAppsInTossAdMob: (params) => {
             console.log('📺 [Mock] showAppsInTossAdMob:', params);
-            // Simulate show event
-            setTimeout(() => {
-                params.onEvent?.({ type: 'show' });
-            }, 500);
-            // Simulate auto-dismiss after 2 seconds
+            setTimeout(() => params.onEvent?.({ type: 'show' }), 500);
             setTimeout(() => {
                 console.log('✅ [Mock] Ad dismissed');
                 params.onEvent?.({ type: 'dismissed' });
             }, 2500);
         }
     };
-
+    // ... NavigationBar mock ...
     window.NavigationBar = {
-        setTitle: (title) => console.log(`🏷️ [Mock] NavigationBar.setTitle: ${title}`),
-        setBackButton: (options) => {
-            console.log(`⬅️ [Mock] NavigationBar.setBackButton:`, options);
-            // 테스트를 위해 전역 함수로 노출
-            window.mockPressBackButton = options.onPress;
-            console.log('💡 테스트 팁: 개발자 도구 콘솔에서 window.mockPressBackButton() 을 실행하여 뒤로가기 동작을 테스트하세요.');
-        }
+        setTitle: (t) => console.log('Mock Title:', t),
+        setBackButton: (opt) => window.mockPressBackButton = opt.onPress
     };
-
-    window.OnAudioFocusChanged = (callback) => {
-        console.log('🎧 [Mock] OnAudioFocusChanged listener registered');
-        // 테스트용: 창 포커스 변경 시 트리거
-        window.addEventListener('focus', () => callback(true));
-        window.addEventListener('blur', () => callback(false));
+    window.OnAudioFocusChanged = (cb) => {
+        window.addEventListener('focus', () => cb(true));
+        window.addEventListener('blur', () => cb(false));
     };
 }
 

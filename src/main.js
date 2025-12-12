@@ -9,15 +9,8 @@ import { initializeAudio } from './audio.js';
 async function initApp() {
     console.log('🚀 Find Meow 앱 시작...');
 
-    // 등급 표시 오버레이 애니메이션 시작 (앱 실행 시 바로)
-    const ratingOverlay = document.getElementById('rating-overlay');
-    if (ratingOverlay) {
-        ratingOverlay.classList.add('active');
-        // 5초 후 제거
-        setTimeout(() => {
-            ratingOverlay.remove();
-        }, 5200);
-    }
+    // 등급 표시 오버레이 애니메이션 시작 (앱 실행 시 바로) - REMOVED per user request
+    // Moved to enterGame
 
     try {
         // 1. Bedrock SDK 초기화
@@ -55,6 +48,16 @@ window.enterGame = function () {
         setTimeout(() => {
             bridge.remove();
         }, 500);
+    }
+
+    // 등급 표시 오버레이 애니메이션 시작 (게임 시작 시)
+    const ratingOverlay = document.getElementById('rating-overlay');
+    if (ratingOverlay) {
+        ratingOverlay.classList.add('active');
+        // 3초 후 제거 (애니메이션 3초)
+        setTimeout(() => {
+            ratingOverlay.remove();
+        }, 3200);
     }
 
     console.log('🎮 Game Entered (Bridge Closed)');
