@@ -57,7 +57,7 @@
 #resultList {
     overflow-y: auto !important;
     min-height: 0 !important;
-    max-height: 50vh !important;
+    max-height: 100vh !important;
     /* 화면의 절반으로 제한 - 스크롤 강제 */
     -webkit-overflow-scrolling: touch !important;
     touch-action: pan-y !important;
