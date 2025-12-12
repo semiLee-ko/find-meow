@@ -1,6 +1,6 @@
 {
   "appId": "com.findmeow.app",
   "appName": "Find Meow",
-  "webDir": "www",
+  "webDir": "dist/web",
   "bundledWebRuntime": false
 }
