@@ -17,7 +17,7 @@ export const config = {
         '순둥냥', '눈송이냥', '포포냥', '가을냥', '총총이'
     ],
 
-    // 광고 설정 (AdMob Test ID)
-    // Android Test ID: ca-app-pub-3940256099942544/1033173712
-    ADMOB_INTERSTITIAL_ID: 'ca-app-pub-3940256099942544/1033173712'
+    // 광고 설정 (Apps In Toss Test ID)
+    // 개발 테스트 시 반드시 테스트용 광고 ID 사용 필요
+    ADMOB_INTERSTITIAL_ID: 'ait-ad-test-interstitial-id'
 };

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Find Meow - TV 채널 고양이 찾기 게임</title>
+
+    <!-- Bedrock SDK (앱인토스) - CDN 로드 -->
+    <script src="https://static.toss.im/bedrock/bedrock.min.js"></script>
+
+    <!-- 스타일시트 -->
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preload" as="image" href="images/paw-print.png">
+    <link rel="stylesheet" href="result-layout-patch.css">
+
+    <!-- 메인 모듈 (ES6 Module) -->
+    <script type="module" src="src/main.js"></script>
+</head>
+
+<body>
+    <!-- 브릿지 뷰 (Intro Screen) -->
+    <div id="bridgeScreen" class="bridge-screen">
+        <div class="bridge-content">
+            <div class="bridge-logo">
+                <img src="images/logo.png" alt="Find Meow">
+            </div>
+            <div class="bridge-title">
+                <h1>Find Meow</h1>
+                <p>친구들과 돌아가며 채널을 바꿔보세요! 누가 가장 많은 고양이를 찾을까요?</p>
+            </div>
+
+            <button class="btn btn-primary btn-bridge-start" onclick="enterGame()">
+                게임 시작
+            </button>
+
+            <!-- 필수: 등급 분류 마크 -->
+            <div class="bridge-rating">
+                <div class="rating-badge-small">
+                    <span>전체</span>
+                </div>
+                <span class="rating-text-small">전체 이용가</span>
+            </div>
+
+            <div class="bridge-footer">
+                <p>&copy; 2025 CODA Creative. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+    <div class="main-layout">
+        <div class="game-area">
+            <!-- 헤더 영역 (버튼 및 로고) -->
+            <div class="game-header">
+                <div class="header-buttons">
+                    <!-- 도움말 버튼 -->
+                    <button class="help-button" id="helpButton" onclick="openInfoPopup()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <circle cx="12" cy="17" r="0.5" fill="currentColor"></circle>
+                        </svg>
+                    </button>
+
+                    <!-- 전체 사운드 토글 버튼 -->
+                    <button class="audio-toggle-button disabled" id="audioToggleButton" onclick="toggleAllAudio()">
+                        <svg id="audioOnIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                            stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                        </svg>
+                        <svg id="audioOffIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                            <line x1="23" y1="9" x2="17" y2="15"></line>
+                            <line x1="17" y1="9" x2="23" y2="15"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- 로고 -->
+                <div class="logo"><img src="images/logo.png" alt="FindMeow Logo"></div>
+            </div>
+
+            <!-- TV 화면 -->
+            <div class="tv-container">
+                <div class="tv-screen" id="tvScreen">
+                    <img class="tv-image" id="tvImage" src="" alt="TV Screen">
+                    <div class="channel-display" id="channelDisplay">000</div>
+                    <div class="cat-counter" id="catCounter">0</div>
+                    <div class="tv-brand">CODA creaTV</div>
+                    <div class="tv-subtitle" id="tvSubtitle">
+                        <span>채널을 선택해달라냥! 귀찮으면 이 몸이 선택해 줄 수도 있으니 걱정말라냥! 에헴!</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 벽 장식 영역 - 사운드바 스피커 -->
+            <div class="wall-decoration-area">
+                <div class="soundbar">
+                    <div class="soundbar-body">
+                        <!-- 왼쪽 스피커 그릴 -->
+                        <div class="speaker-grill left">
+                            <div class="grill-dots"></div>
+                        </div>
+
+                        <!-- 중앙 컨트롤 영역 -->
+                        <div class="soundbar-center">
+                            <button class="power-button" id="powerButton" onclick="toggleMusic()">
+                                <div class="power-icon"></div>
+                            </button>
+                            <div class="led-indicator" id="ledIndicator"></div>
+                            <div class="brand-label">SOUND</div>
+                        </div>
+
+                        <!-- 오른쪽 스피커 그릴 -->
+                        <div class="speaker-grill right">
+                            <div class="grill-dots"></div>
+                        </div>
+                    </div>
+
+                    <!-- 사운드 웨이브 애니메이션 -->
+                    <div class="sound-waves" id="soundWaves">
+                        <div class="wave"></div>
+                        <div class="wave"></div>
+                        <div class="wave"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 고양이 발자국 컨테이너 (배경 레이어) -->
+            <div id="pawPrintsContainer" class="paw-prints-container"></div>
+        </div>
+
+        <div class="controls-area">
+            <!-- 초기 화면 (참여 인원 선택) -->
+            <div class="initial-screen" id="initialScreen">
+                <div class="input-group">
+                    <label for="playerCount">참여 인원 수</label>
+
+                    <!-- 네이티브 select (모바일용) -->
+                    <select id="playerCount" class="native-select">
+                        <option value="2">2명</option>
+                        <option value="3" selected>3명</option>
+                        <option value="4">4명</option>
+                        <option value="5">5명</option>
+                        <option value="6">6명</option>
+                        <option value="7">7명</option>
+                        <option value="8">8명</option>
+                        <option value="9">9명</option>
+                        <option value="10">10명</option>
+                        <option value="11">11명</option>
+                        <option value="12">12명</option>
+                        <option value="13">13명</option>
+                        <option value="14">14명</option>
+                        <option value="15">15명</option>
+                    </select>
+
+                    <!-- 커스텀 드롭다운 (데스크톱용) -->
+                    <div class="custom-dropdown" id="customDropdown">
+                        <button type="button" class="custom-dropdown-button" id="dropdownButton">
+                            <span id="dropdownValue">3명</span>
+                            <svg class="dropdown-arrow" width="12" height="8" viewBox="0 0 12 8">
+                                <path fill="currentColor" d="M1.41 0L6 4.58 10.59 0 12 1.41l-6 6-6-6z" />
+                            </svg>
+                        </button>
+                        <div class="custom-dropdown-list" id="dropdownList">
+                            <div class="custom-dropdown-option" data-value="2">2명</div>
+                            <div class="custom-dropdown-option" data-value="3">3명</div>
+                            <div class="custom-dropdown-option" data-value="4">4명</div>
+                            <div class="custom-dropdown-option" data-value="5">5명</div>
+                            <div class="custom-dropdown-option" data-value="6">6명</div>
+                            <div class="custom-dropdown-option" data-value="7">7명</div>
+                            <div class="custom-dropdown-option" data-value="8">8명</div>
+                            <div class="custom-dropdown-option" data-value="9">9명</div>
+                            <div class="custom-dropdown-option" data-value="10">10명</div>
+                            <div class="custom-dropdown-option" data-value="11">11명</div>
+                            <div class="custom-dropdown-option" data-value="12">12명</div>
+                            <div class="custom-dropdown-option" data-value="13">13명</div>
+                            <div class="custom-dropdown-option" data-value="14">14명</div>
+                            <div class="custom-dropdown-option" data-value="15">15명</div>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="startGame()">게임 시작</button>
+            </div>
+
+            <!-- 리모컨 영역 -->
+            <div class="remote-control" id="remoteControl">
+                <div class="remote-header">
+                    <div class="player-info" id="playerInfo">플레이어 1 / 3</div>
+                </div>
+
+                <div class="input-row">
+                    <input type="text" class="name-input" id="playerName" placeholder="이름을 입력하세요" maxlength="20">
+                    <button class="btn-next-arrow" id="btnNext" onclick="confirmPlayer()" disabled aria-label="다음">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="number-pad">
+                    <button class="number-btn" id="btn1" onclick="pressNumber('1')">1</button>
+                    <button class="number-btn" id="btn2" onclick="pressNumber('2')">2</button>
+                    <button class="number-btn" id="btn3" onclick="pressNumber('3')">3</button>
+                    <button class="number-btn" id="btn4" onclick="pressNumber('4')">4</button>
+                    <button class="number-btn" id="btn5" onclick="pressNumber('5')">5</button>
+                    <button class="number-btn" id="btn6" onclick="pressNumber('6')">6</button>
+                    <button class="number-btn" id="btn7" onclick="pressNumber('7')">7</button>
+                    <button class="number-btn" id="btn8" onclick="pressNumber('8')">8</button>
+                    <button class="number-btn" id="btn9" onclick="pressNumber('9')">9</button>
+                    <button class="number-btn" id="btnBackspace" onclick="backspace()">⌫</button>
+                    <button class="number-btn" id="btn0" onclick="pressNumber('0')">0</button>
+                    <button class="number-btn random-btn" id="btnRandom" onclick="randomChannel()">랜덤</button>
+                </div>
+
+                <button class="btn-channel-action" id="btnChannelAction" onclick="changeChannel()">채널 변경</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 결과 화면 -->
+    <div class="result-screen" id="resultScreen">
+        <h2>게임 결과</h2>
+        <div id="resultList"></div>
+        <button class="btn btn-primary" onclick="resetGame()">다시 하기</button>
+    </div>
+
+    <!-- 게임 정보 팝업 -->
+    <div class="info-popup" id="infoPopup">
+        <div class="info-popup-content">
+            <!-- 닫기 버튼 -->
+            <button class="close-button" onclick="closeInfoPopup()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+
+            <!-- 등급 분류 -->
+            <div class="rating-section">
+                <div class="rating-badge">
+                    <div class="rating-icon">전체</div>
+                    <div class="rating-text">전체 이용가</div>
+                </div>
+                <p class="rating-description">본 게임은 자율 등급 분류에 따라 모든 연령이 이용 가능합니다.</p>
+            </div>
+
+            <!-- 게임 제목 -->
+            <h2 class="info-title">Find Meow</h2>
+            <p class="info-subtitle">친구들과 돌아가며 채널을 바꿔보세요! 누가 가장 많은 고양이를 찾을까요?</p>
+
+            <!-- 게임 룰 설명 -->
+            <div class="rules-section">
+                <h3>게임 방법</h3>
+
+                <div class="rule-item">
+                    <div class="rule-number">1</div>
+                    <div class="rule-content">
+                        <h4>참여 인원 선택</h4>
+                        <p>2명부터 15명까지 함께 플레이할 수 있습니다.</p>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <div class="rule-number">2</div>
+                    <div class="rule-content">
+                        <h4>이름 입력 & 채널 선택</h4>
+                        <p>플레이어 이름을 입력하고, 1~999번 중 원하는 채널 번호를 선택하세요. 랜덤 버튼을 클릭하면 고양이가 알아서 채널을 선택해줍니다.</p>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <div class="rule-number">3</div>
+                    <div class="rule-content">
+                        <h4>고양이 찾기</h4>
+                        <p>채널 변경 버튼을 누르면 화면에 이미지가 나타납니다. 화면을 스캔하며 숨어있는 <strong>고양이의 수</strong>를 자동으로 세어줍니다.</p>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <div class="rule-number">4</div>
+                    <div class="rule-content">
+                        <h4>승자 결정</h4>
+                        <p>모든 플레이어가 차례를 마치면, <strong>가장 많은 고양이를 찾은 사람</strong>이 승리합니다!</p>
+                    </div>
+                </div>
+
+                <div class="rule-item">
+                    <div class="rule-number">5</div>
+                    <div class="rule-content">
+                        <h4>이름 변경</h4>
+                        <p>각 플레이어 별로 <strong>이름을 변경</strong>할 수 있습니다.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 팁 섹션 -->
+            <div class="tips-section">
+                <h3>고양이 카운트 조건</h3>
+                <ul>
+                    <li>이목구비(눈,코,입)가 인식되도록 잘 나온 경우만 카운트 됩니다.</li>
+                    <li>고양이 이외의 다른 동물들은 카운트 되지 않습니다.</li>
+                    <li>스캔 애니메이션이 끝날 때까지 기다려주세요!</li>
+                </ul>
+            </div>
+
+            <!-- 회사 정보 -->
+            <div class="company-info">
+                <p>© 2025 CODA Creative. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 커스텀 Alert 팝업 -->
+    <div class="custom-alert-overlay" id="customAlertOverlay" onclick="closeCustomAlert()">
+        <div class="custom-alert-popup" onclick="event.stopPropagation()">
+            <div class="custom-alert-message" id="customAlertMessage"></div>
+            <button class="custom-alert-button" onclick="closeCustomAlert()">확인</button>
+        </div>
+    </div>
+
+
+    <!-- 배경 음악 -->
+    <audio id="bgMusic" loop preload="none">
+        <source id="bgMusicSrc" src="audio/background-music.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 스캔 효과음 -->
+    <audio id="scanSound">
+        <source src="audio/scan.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 고양이 발견 효과음 (여러 개 동시 재생을 위한 풀) -->
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio class="catSound">
+        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 클릭 효과음 -->
+    <audio id="clickSound">
+        <source src="audio/click.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 실패 효과음 -->
+    <audio id="failSound">
+        <source src="audio/fail.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 게임 시작 효과음 -->
+    <audio id="gameStartSound">
+        <source src="audio/game_start.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 게임 종료 효과음 -->
+    <audio id="gameEndSound">
+        <source src="audio/game_end.mp3" type="audio/mpeg">
+    </audio>
+
+</body>
+
+</html>

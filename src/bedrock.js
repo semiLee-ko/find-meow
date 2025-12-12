@@ -13,6 +13,15 @@ export async function initializeBedrock() {
         return;
     }
 
+    // [DEBUG] 환경 진단 로그 (화면 출력)
+    console.log('--- Environment Check ---');
+    console.log('UA:', navigator.userAgent);
+    console.log('Bedrock:', !!window.Bedrock);
+    console.log('Toss:', !!window.Toss);
+    console.log('BedrockNative:', !!window.BedrockNative);
+    console.log('Location:', document.location.href);
+    console.log('-------------------------');
+
     // 로컬 개발 환경을 위한 Mock SDK 설정
     if (!window.Bedrock) {
         console.warn('⚠️ Bedrock SDK not found. Initializing Mock SDK for development.');
@@ -47,56 +56,96 @@ export async function initializeBedrock() {
 window.resetGame = resetGame;
 window.showExitConfirmation = showExitConfirmation;
 
-// ==================== 광고 (AdMob 2.0) ====================
+// ==================== 광고 (AdMob 2.0 - Window Usage) ====================
 let isAdLoaded = false;
 
 /**
- * 전면 광고 로드 준비 (2.0 API)
+ * 전면 광고 로드 준비 (Window Interface)
  */
 export async function prepareInterstitialAd() {
-    if (!window.Bedrock) return;
+    if (!window.Bedrock) {
+        console.warn('⚠️ window.Bedrock missing');
+        return;
+    }
+
+    // 메서드 존재 확인
+    if (!window.Bedrock.loadAppsInTossAdMob) {
+        console.warn('⚠️ loadAppsInTossAdMob not found on window.Bedrock');
+        return;
+    }
+
+    console.log('⏳ Loading Interstitial Ad (Window)...');
 
     try {
-        console.log('⏳ Loading Interstitial Ad (2.0)...');
-        await window.Bedrock.loadAppsInTossAdMob({
-            adUnitId: config.ADMOB_INTERSTITIAL_ID,
-            adType: 'interstitial' // 2.0에서는 광고 타입 명시
+        const cleanup = window.Bedrock.loadAppsInTossAdMob({
+            options: {
+                adGroupId: config.ADMOB_INTERSTITIAL_ID
+            },
+            onEvent: (event) => {
+                if (event.type === 'loaded') {
+                    isAdLoaded = true;
+                    console.log('✅ Interstitial Ad Loaded (Window)');
+                    cleanup && cleanup();
+                }
+            },
+            onError: (error) => {
+                console.warn('❌ Failed to load Interstitial Ad:', error);
+                isAdLoaded = false;
+                cleanup && cleanup();
+            }
         });
-        isAdLoaded = true;
-        console.log('✅ Interstitial Ad Loaded (2.0)');
     } catch (error) {
-        console.warn('❌ Failed to load Interstitial Ad:', error);
-        isAdLoaded = false;
+        console.warn('❌ Error calling loadAppsInTossAdMob:', error);
     }
 }
 
 /**
- * 전면 광고 표시 (2.0 API)
- * @returns {Promise<void>} 광고가 닫히거나 실패하면 resolve
+ * 전면 광고 표시 (Window Interface)
  */
 export function showInterstitialAd() {
     return new Promise((resolve) => {
         if (!isAdLoaded) {
             console.log('⚠️ Ad not loaded, skipping...');
-            // 로드 안됐으면 바로 진행하되, 다음을 위해 로드 시도
             prepareInterstitialAd();
             resolve();
             return;
         }
 
+        if (!window.Bedrock || !window.Bedrock.showAppsInTossAdMob) {
+            console.warn('⚠️ showAppsInTossAdMob not supported');
+            resolve();
+            return;
+        }
+
         try {
-            console.log('📺 Showing Interstitial Ad (2.0)...');
-            window.Bedrock.showAppsInTossAdMob()
-                .then(() => {
-                    console.log('✅ Ad shown successfully (2.0)');
-                    isAdLoaded = false; // 보여줬으니 초기화
-                    prepareInterstitialAd(); // 다음을 위해 미리 로드
-                    resolve();
-                })
-                .catch((error) => {
+            console.log('📺 Showing Interstitial Ad (Window)...');
+            window.Bedrock.showAppsInTossAdMob({
+                options: {
+                    adGroupId: config.ADMOB_INTERSTITIAL_ID
+                },
+                onEvent: (event) => {
+                    console.log('Ad Event:', event.type);
+                    switch (event.type) {
+                        case 'show':
+                            console.log('광고 표시됨');
+                            break;
+                        case 'dismissed':
+                            console.log('광고 닫힘');
+                            isAdLoaded = false;
+                            prepareInterstitialAd();
+                            resolve();
+                            break;
+                        case 'failedToShow':
+                            console.warn('광고 표시 실패');
+                            resolve();
+                            break;
+                    }
+                },
+                onError: (error) => {
                     console.warn('❌ Failed to show Ad:', error);
-                    resolve(); // 에러나도 게임 진행은 막지 않음
-                });
+                    resolve();
+                }
+            });
         } catch (error) {
             console.warn('❌ Error calling showAd:', error);
             resolve();
@@ -115,15 +164,27 @@ function setupMockBedrock() {
             console.log('🛑 [Mock] Bedrock.exit() called');
             const confirmed = confirm('앱 종료 (Mock)');
         },
-        // Mock Ads (2.0 API)
+        // Mock Ads (Options + Callbacks)
         loadAppsInTossAdMob: (params) => {
-            console.log('📦 [Mock] loadAppsInTossAdMob (2.0):', params);
-            return new Promise(resolve => setTimeout(resolve, 1000));
+            console.log('📦 [Mock] loadAppsInTossAdMob:', params);
+            // Simulate callback after delay
+            setTimeout(() => {
+                params.onEvent?.({ type: 'loaded', data: {} });
+            }, 1000);
+            // Return cleanup function
+            return () => console.log('[Mock] cleanup called');
         },
-        showAppsInTossAdMob: () => {
-            console.log('📺 [Mock] showAppsInTossAdMob (2.0) called');
-            console.log('✅ [Mock] Ad closed (auto-dismissed)');
-            return Promise.resolve();
+        showAppsInTossAdMob: (params) => {
+            console.log('📺 [Mock] showAppsInTossAdMob:', params);
+            // Simulate show event
+            setTimeout(() => {
+                params.onEvent?.({ type: 'show' });
+            }, 500);
+            // Simulate auto-dismiss after 2 seconds
+            setTimeout(() => {
+                console.log('✅ [Mock] Ad dismissed');
+                params.onEvent?.({ type: 'dismissed' });
+            }, 2500);
         }
     };
 

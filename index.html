@@ -11,7 +11,7 @@
     <script src="https://static.toss.im/bedrock/bedrock.min.js"></script>
 
     <!-- 스타일시트 -->
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="/src/styles.css">
     <link rel="preload" as="image" href="images/paw-print.png">
     <link rel="stylesheet" href="result-layout-patch.css">
 
@@ -20,6 +20,51 @@
 </head>
 
 <body>
+    <!-- 디버그 콘솔 (개발용) -->
+    <!--
+    <div id="debug-console"
+        style="position:fixed; top:0; left:0; width:100%; height:150px; background:rgba(0,0,0,0.8); color:#00ff00; overflow-y:auto; z-index:99999; font-size:12px; padding:5px; pointer-events:none; white-space: pre-wrap; font-family: monospace;">
+        📋 Debug Console Started...</div>
+    <script>
+        (function () {
+            var consoleDiv = document.getElementById('debug-console');
+            function logToScreen(msg, color) {
+                if (!consoleDiv) return;
+                var div = document.createElement('div');
+                div.style.color = color || '#00ff00';
+                div.style.borderBottom = '1px solid #333';
+                div.textContent = msg;
+                consoleDiv.appendChild(div);
+                consoleDiv.scrollTop = consoleDiv.scrollHeight;
+            }
+            // 기존 console 함수 캡처
+            var originalLog = console.log;
+            var originalWarn = console.warn;
+            var originalError = console.error;
+
+            console.log = function () {
+                var args = Array.from(arguments).map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg));
+                logToScreen('ℹ️ ' + args.join(' '), '#00ff00');
+                originalLog.apply(console, arguments);
+            };
+            console.warn = function () {
+                var args = Array.from(arguments).map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg));
+                logToScreen('⚠️ ' + args.join(' '), '#ffff00');
+                originalWarn.apply(console, arguments);
+            };
+            console.error = function () {
+                var args = Array.from(arguments).map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg));
+                logToScreen('❌ ' + args.join(' '), '#ff4444');
+                originalError.apply(console, arguments);
+            };
+
+            // 전역 에러 캡처
+            window.onerror = function (msg, url, line) {
+                logToScreen('🔥 Error: ' + msg + ' (' + line + ')', '#ff0000');
+            };
+        })();
+    </script>
+    -->
     <!-- 브릿지 뷰 (Intro Screen) -->
     <div id="bridgeScreen" class="bridge-screen">
         <div class="bridge-content">
@@ -34,20 +79,14 @@
             <button class="btn btn-primary btn-bridge-start" onclick="enterGame()">
                 게임 시작
             </button>
-
-            <!-- 필수: 등급 분류 마크 -->
-            <div class="bridge-rating">
-                <div class="rating-badge-small">
-                    <span>전체</span>
-                </div>
-                <span class="rating-text-small">전체 이용가</span>
-            </div>
-
             <div class="bridge-footer">
                 <p>&copy; 2025 CODA Creative. All rights reserved.</p>
             </div>
         </div>
     </div>
+
+    <!-- 게임 등급 표시 오버레이 (게임 시작 시 우측 상단 노출 후 페이드아웃) -->
+    <div id="rating-overlay" class="rating-overlay"></div>
     <div class="main-layout">
         <div class="game-area">
             <!-- 헤더 영역 (버튼 및 로고) -->
@@ -183,7 +222,7 @@
                         </div>
                     </div>
                 </div>
-                <button class="btn btn-primary" onclick="startGame()">게임 시작</button>
+                <button class="btn btn-primary" onclick="startGame()">선택 완료</button>
             </div>
 
             <!-- 리모컨 영역 -->
@@ -226,7 +265,11 @@
     <div class="result-screen" id="resultScreen">
         <h2>게임 결과</h2>
         <div id="resultList"></div>
-        <button class="btn btn-primary" onclick="resetGame()">다시 하기</button>
+        <button class="btn btn-primary" onclick="resetGame()">
+            <img src="images/ad-icon.png" alt="광고"
+                style="width: 20px; height: 20px; vertical-align: middle; margin-right: 8px;">
+            광고보고 다시하기
+        </button>
     </div>
 
     <!-- 게임 정보 팝업 -->

@@ -5,9 +5,9 @@ import { prepareInterstitialAd, showInterstitialAd } from './bedrock.js';
 
 // ==================== 게임 데이터 ====================
 const channelImages = [];
-for (let i = 1; i <= config.MAX_CHANNEL_IMAGES; i++) {
-    const paddedNum = String(i).padStart(4, '0');
-    channelImages.push(`channel${paddedNum}.png`);
+for (let i = 1; i <= 82; i++) {
+    const paddedNum = i.toString().padStart(4, '0');
+    channelImages.push(`channel${paddedNum}.jpg`);
 }
 
 // 고양이 사운드 풀

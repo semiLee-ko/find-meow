@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npx serve . -p 3000",
-    "build": "powershell -Command \"if (!(Test-Path dist)) { New-Item -ItemType Directory -Force dist }; Copy-Item index.html, styles.css, result-layout-patch.css -Destination dist -Force; Copy-Item -Recurse -Force images, point, audio -Destination dist\""
+    "dev": "granite dev",
+    "build": "granite build",
+    "deploy": "ait deploy"
   },
   "keywords": [
     "appentos",
@@ -17,6 +18,12 @@
   "license": "ISC",
   "type": "module",
   "devDependencies": {
-    "@playwright/test": "^1.57.0"
+    "@playwright/test": "^1.57.0",
+    "vite": "^7.2.7",
+    "vite-plugin-singlefile": "^2.3.0"
+  },
+  "dependencies": {
+    "@apps-in-toss/framework": "^1.5.2",
+    "@apps-in-toss/web-framework": "^1.5.2"
   }
 }
