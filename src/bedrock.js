@@ -14,7 +14,15 @@ export async function initializeBedrock() {
     // [DEBUG] 환경 진단 로그
     console.log('--- Environment Check (Framework) ---');
     console.log('UA:', navigator.userAgent);
-    const supported = GoogleAdMob.loadAppsInTossAdMob.isSupported();
+
+    let supported = false;
+    try {
+        supported = GoogleAdMob.loadAppsInTossAdMob.isSupported();
+    } catch (e) {
+        console.warn('⚠️ Framework isSupported check failed, falling back to mock:', e);
+        supported = false;
+    }
+
     console.log('GoogleAdMob Supported:', supported);
     console.log('-------------------------');
 
@@ -47,7 +55,14 @@ let adCleanup = null;
  * 전면 광고 로드 준비
  */
 export async function prepareInterstitialAd() {
-    if (GoogleAdMob.loadAppsInTossAdMob.isSupported() !== true) {
+    let isSupported = false;
+    try {
+        isSupported = GoogleAdMob.loadAppsInTossAdMob.isSupported();
+    } catch (e) {
+        console.warn('⚠️ Framework check failed:', e);
+    }
+
+    if (isSupported !== true) {
         // Fallback to Window Mock if set up, or just log
         if (window.Bedrock && window.Bedrock.loadAppsInTossAdMob) {
             // Mock Bedrock path
@@ -99,7 +114,14 @@ export function showInterstitialAd() {
             return;
         }
 
-        if (GoogleAdMob.showAppsInTossAdMob.isSupported() !== true) {
+        let isShowSupported = false;
+        try {
+            isShowSupported = GoogleAdMob.showAppsInTossAdMob.isSupported();
+        } catch (e) {
+            console.warn('⚠️ Framework check failed (show):', e);
+        }
+
+        if (isShowSupported !== true) {
             // Mock Path
             if (window.Bedrock && window.Bedrock.showAppsInTossAdMob) {
                 window.Bedrock.showAppsInTossAdMob({

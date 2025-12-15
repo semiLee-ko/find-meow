@@ -20,4 +20,5 @@ export const config = {
     // 광고 설정 (Apps In Toss Test ID)
     // 개발 테스트 시 반드시 테스트용 광고 ID 사용 필요
     ADMOB_INTERSTITIAL_ID: 'ait-ad-test-interstitial-id'
+    //ADMOB_INTERSTITIAL_ID: 'ait.v2.live.839b5738d3d0430d'
 };

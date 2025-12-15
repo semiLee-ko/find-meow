@@ -14,6 +14,22 @@
 
     <link rel="stylesheet" href="result-layout-patch.css">
 
+    <style>
+        :root {
+            --sat: env(safe-area-inset-top);
+            --sab: env(safe-area-inset-bottom);
+            --sal: env(safe-area-inset-left);
+            --sar: env(safe-area-inset-right);
+        }
+
+        body {
+            padding-top: var(--sat);
+            padding-bottom: var(--sab);
+            padding-left: var(--sal);
+            padding-right: var(--sar);
+        }
+    </style>
+
     <!-- 메인 모듈 (ES6 Module) -->
     <script type="module" src="src/main.js"></script>
 </head>
