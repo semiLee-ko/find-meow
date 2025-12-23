@@ -30,14 +30,18 @@
     </style>
 
     <!-- 메인 모듈 (ES6 Module) -->
-  <script type="module" crossorigin src="./assets/index-B2Mw4bFw.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-DIEcGVV5.css">
+  <script type="module" crossorigin src="./assets/index-48mihgJs.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-4Zw6f66v.css">
 </head>
 
 <body>
 
 
 
+
+    <!-- 등급 표시 오버레이 (앱 실행 시 전체 화면) -->
+    <div id="rating-overlay" class="rating-overlay"></div>
+    
     <!-- 브릿지 뷰 (Intro Screen) -->
     <div id="bridgeScreen" class="bridge-screen">
         <div class="bridge-content">
@@ -102,7 +106,7 @@
                     <div class="cat-counter" id="catCounter">0</div>
 
                     <!-- 등급 표시 오버레이 (TV 화면 내부) -->
-                    <div id="rating-overlay" class="rating-overlay"></div>
+
 
                     <div class="tv-brand">CODA creaTV</div>
                     <div class="tv-subtitle" id="tvSubtitle">
@@ -203,6 +207,9 @@
 
             <!-- 리모컨 영역 -->
             <div class="remote-control" id="remoteControl">
+                <div class="remote-drag-handle" id="remoteDragHandle">
+                    <div class="drag-handle-bar"></div>
+                </div>
                 <div class="remote-header">
                     <div class="player-info" id="playerInfo">플레이어 1 / 3</div>
                 </div>
@@ -354,37 +361,7 @@
         <source src="audio/scan.mp3" type="audio/mpeg">
     </audio>
 
-    <!-- 고양이 발견 효과음 (여러 개 동시 재생을 위한 풀) -->
-    <audio class="catSound">
-        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
-    </audio>
-    <audio class="catSound">
-        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
-    </audio>
-    <audio class="catSound">
-        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
-    </audio>
-    <audio class="catSound">
-        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
-    </audio>
-    <audio class="catSound">
-        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
-    </audio>
-    <audio class="catSound">
-        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
-    </audio>
-    <audio class="catSound">
-        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
-    </audio>
-    <audio class="catSound">
-        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
-    </audio>
-    <audio class="catSound">
-        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
-    </audio>
-    <audio class="catSound">
-        <source src="audio/small_cat_sound.mp3" type="audio/mpeg">
-    </audio>
+    <!-- 고양이 발견 효과음 (Web Audio API 사용, 태그 제거됨) -->
 
     <!-- 클릭 효과음 -->
     <audio id="clickSound">
@@ -409,3 +386,15 @@
 </body>
 
 </html>
+<script>
+    function syncRemoteHeightVar() {
+        const remote = document.querySelector('.remote-control');
+        if (!remote) return;
+
+        const h = remote.getBoundingClientRect().height;
+        document.documentElement.style.setProperty('--remote-h', `${Math.ceil(h)}px`);
+    }
+
+    window.addEventListener('load', syncRemoteHeightVar);
+    window.addEventListener('resize', syncRemoteHeightVar);
+</script>

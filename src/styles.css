@@ -1199,7 +1199,8 @@ body {
 .remote-control {
     width: 100%;
     /* 모바일 기본: TV와 동일한 제약 조건 적용 */
-    max-width: min(500px, 70vh);
+    max-width: 400px;
+    max-height: 500px;
     background: #ffffff;
     border-radius: 32px 32px 0 0;
     padding: 10px 18px;
@@ -1214,6 +1215,33 @@ body {
 
 .remote-control.slide-in {
     display: block;
+}
+
+/* Minimize State: Slide down */
+/* Minimize State: Slide down */
+.remote-control.minimized {
+    /* Combined transform to maintain centering (translateX) while sliding down (translateY) */
+    transform: translateX(-50%) translateY(calc(100% - 60px)) !important;
+    transition: transform 0.3s ease;
+}
+
+/* Drag Handle Styles */
+.remote-drag-handle {
+    width: 100%;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    touch-action: none;
+    /* Critical for touch events */
+}
+
+.drag-handle-bar {
+    width: 48px;
+    height: 5px;
+    background: #e0e0e0;
+    border-radius: 3px;
 }
 
 @keyframes slideUp {
@@ -1311,18 +1339,18 @@ body {
 .number-pad {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 24px;
+    gap: 5px;
+    margin-bottom: 5px;
 }
 
 .number-btn {
     position: relative;
     /* For paw print positioning */
-    aspect-ratio: 1.5;
+    aspect-ratio: 2.5;
     background: #f2f4f6;
     border: none;
     border-radius: 12px;
-    font-size: 1.5rem;
+    font-size: 1.0rem;
     font-weight: 600;
     color: #333;
     cursor: pointer;
@@ -1394,7 +1422,7 @@ body {
     position: relative;
     /* For paw print */
     width: 100%;
-    padding: 16px;
+    padding: 12px;
     background: #3182f6;
     color: white;
     border: none;
@@ -1632,14 +1660,14 @@ body {
     /* Take remaining space */
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    justify-content: flex-start;
     /* Push children to bottom */
     padding: 0;
     /* No generic padding here, let children handle it */
 }
 
 /* Tablet/PC Layout */
-@media (min-width: 768px) {
+@media (min-width: 650px) {
     .tv-container {
         /* 태블릿/PC: TV는 세로 크기에 맞춰 줄어들 수 있음 */
         max-width: min(800px, 70vh);
@@ -1735,112 +1763,6 @@ body {
     }
 }
 
-@media (max-width: 640px) {
-    /* .game-header styling removed for mobile */
-
-    .logo img {
-        height: 62px;
-    }
-
-    .tv-container {
-        /* 모바일: 여백 줄임 */
-        margin: 5px 0 15px 0;
-    }
-
-    .tv-screen {
-        border: 5px solid #2d2d2d;
-    }
-
-    .tv-brand {
-        bottom: 6px;
-        font-size: 0.6rem;
-    }
-
-    .channel-display {
-        top: 12px;
-        right: 12px;
-        font-size: 0.95rem;
-        padding: 5px 12px;
-    }
-
-    .cat-counter {
-        top: 15px;
-        left: 15px;
-        font-size: 2.5rem;
-    }
-
-    .initial-screen {
-        border-radius: 20px 20px 0 0;
-        padding: 16px 20px;
-    }
-
-    .input-group {
-        margin-bottom: 12px;
-    }
-
-    .input-group label {
-        font-size: 0.9rem;
-        margin-bottom: 6px;
-    }
-
-    .input-group select {
-        padding: 10px 14px;
-        font-size: 0.95rem;
-    }
-
-    .btn {
-        padding: 14px;
-        font-size: 1rem;
-    }
-
-    .remote-control {
-        border-radius: 20px 20px 0 0;
-        padding: 8px 16px;
-    }
-
-    .remote-header {
-        margin-bottom: 6px;
-    }
-
-    .player-info {
-        font-size: 0.85rem;
-    }
-
-    .name-input {
-        padding: 7px;
-        font-size: 0.9rem;
-        margin-bottom: 6px;
-        border-radius: 10px;
-    }
-
-    .number-pad {
-        gap: 4px;
-        margin-bottom: 6px;
-    }
-
-    .number-btn {
-        font-size: 1rem;
-        aspect-ratio: 2.2;
-        border-radius: 10px;
-    }
-
-    .number-btn.channel-change {
-        font-size: 0.85rem;
-        line-height: 1.2;
-    }
-
-    .btn-next {
-        padding: 10px;
-        font-size: 1rem;
-        border-radius: 12px;
-    }
-
-    .result-thumbnail {
-        width: 70px;
-        height: 70px;
-    }
-}
-
 .hidden {
     display: none !important;
 }
@@ -1875,7 +1797,8 @@ body {
     width: 100vw;
     height: 100vh;
     background: #f4f1ea;
-    z-index: 9999;
+    z-index: 100000;
+    /* Increased to overlay everything (initial-screen is 9999, info-popup is 30000) */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2035,7 +1958,6 @@ select:focus {
 }
 
 /* ==================== Layout Fix: Bottom Sheet Style (Flex) ==================== */
-.initial-screen,
 .remote-control {
     width: 100% !important;
     max-width: 800px !important;
@@ -2172,8 +2094,18 @@ body {
 
     /* Ensure Logo Image fits nicely */
     .logo img {
-        height: 48px !important;
-        /* Reduce height in landscape header */
+        height: 50px !important;
+        width: auto !important;
+    }
+
+    /* Hide Drag Handle in Landscape (PC/Tablet) - Feature Disable */
+    .remote-drag-handle {
+        display: none !important;
+    }
+
+    /* Force Remote to full view if somehow minimized class is present */
+    .remote-control.minimized {
+        transform: none !important;
     }
 
     .controls-area {
@@ -2315,27 +2247,29 @@ body {
 }
 
 /* Rating Overlay (Fade Out Effect) */
+/* Rating Overlay (Fade Out Effect) - Apps-in-Toss Requirement */
+/* Rating Overlay (Fade Out Effect) - Apps-in-Toss Requirement */
 .rating-overlay {
-    position: absolute;
-    top: 20px;
-    right: 20px;
+    position: fixed;
+    top: 80px;
+    right: 30px;
+    transform: scale(0.8);
     width: 61px;
     height: 70px;
     background-image: url('./gameLv.png');
     background-size: 603px 325px;
     background-position: -115px -186px;
     background-repeat: no-repeat;
-    z-index: 9999;
+    z-index: 999999;
+    /* Highest possible to cover bridge */
     pointer-events: none;
     opacity: 0;
-    transform: scale(0.8);
     transition: opacity 1s ease;
 }
 
 .rating-overlay.active {
     opacity: 1;
-    transform: scale(1);
-    animation: fadeOutRating 3s forwards;
+    animation: fadeOutRating 5s forwards;
 }
 
 @keyframes fadeOutRating {
@@ -2354,9 +2288,77 @@ body {
         transform: scale(1);
     }
 
-    /* 4초까지 100% 유지 (안전하게 3초 이상 확보) */
+    /* Keep visible longer */
     100% {
         opacity: 0;
         transform: scale(1);
     }
+}
+
+
+
+
+/* ==================== Remote Control: Fixed Bottom Overlay (Portrait) ==================== */
+@media (max-width: 767px) {
+    .remote-control {
+        position: fixed !important;
+        /* 흐름에서 분리 */
+        left: 50% !important;
+        bottom: 0 !important;
+        /* ✅ 하단 고정 */
+        top: auto !important;
+
+        transform: translateX(-50%) !important;
+
+        width: 100% !important;
+        max-width: 90% !important;
+        max-height: 500px !important;
+        overflow: auto !important;
+        /* 리모컨이 화면보다 커지면 내부 스크롤 */
+        /* TV 폭 규칙이랑 맞추기 */
+        z-index: 9999 !important;
+
+        margin: 0 !important;
+        /* margin-top:auto 무력화 */
+        flex: none !important;
+        margin: 0 !important;
+        /* margin-top:auto 무력화 */
+        flex: none !important;
+    }
+
+    /* FIX: Ensure Initial Screen (Player Count) also sticks to bottom */
+    .initial-screen {
+        position: fixed !important;
+        left: 50% !important;
+        bottom: 0 !important;
+        transform: translateX(-50%) !important;
+        width: 100% !important;
+        max-width: 90% !important;
+        /* Match Remote Control */
+        z-index: 9999 !important;
+        margin: 0 !important;
+        flex: none !important;
+        border-radius: 20px 20px 0 0 !important;
+        padding-bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+        background: #ffffff !important;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    /* controls-area가 리모컨 자리 만들려고 키 커지는 거 방지 */
+    .controls-area {
+        flex: 0 0 auto !important;
+        justify-content: flex-start !important;
+    }
+
+    /* 리모컨 실제 높이로 맞춰가면 됨 */
+
+    .main-layout {
+        padding-bottom: calc(var(--remote-h) + env(safe-area-inset-bottom)) !important;
+    }
+
+}
+
+/* FIX: Ensure Help Popup is always on top (Remote is 20000) */
+.info-popup {
+    z-index: 100001 !important;
 }

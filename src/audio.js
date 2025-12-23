@@ -12,6 +12,7 @@ export function initializeAudio() {
 
     // 앱 생명주기 관리 (백그라운드/포그라운드)
     setupVisibilityListener();
+    setupWebAudio(); // Init Web Audio
 
     // 버튼 이벤트 리스너 명시적 연결 (HTML onclick 보완)
     const toggleBtn = document.getElementById('audioToggleButton');
@@ -163,3 +164,63 @@ function setupVisibilityListener() {
 // 전역 함수로 내보내기 (HTML에서 호출용)
 window.toggleAllAudio = toggleAllAudio;
 window.toggleMusic = toggleMusic;
+
+// ==================== Web Audio API (High Performance for iOS) ====================
+let audioCtx = null;
+const soundBuffers = {};
+
+export function setupWebAudio() {
+    if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+            audioCtx = new AudioContext();
+            setupUnlockAudio();
+        }
+    }
+}
+
+function setupUnlockAudio() {
+    if (!audioCtx) return;
+
+    const unlock = () => {
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume().then(() => {
+                document.body.removeEventListener('touchstart', unlock);
+                document.body.removeEventListener('click', unlock);
+            });
+        }
+    };
+
+    document.body.addEventListener('touchstart', unlock, { passive: true });
+    document.body.addEventListener('click', unlock, { passive: true });
+}
+
+export async function loadSoundEffect(name, url) {
+    if (!audioCtx) setupWebAudio();
+    if (!audioCtx) return;
+
+    try {
+        const response = await fetch(url);
+        const arrayBuffer = await response.arrayBuffer();
+        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+        soundBuffers[name] = audioBuffer;
+        console.log(`Sound loaded: ${name}`);
+    } catch (e) {
+        console.error(`Failed to load sound: ${name}`, e);
+    }
+}
+
+export function playSoundEffect(name) {
+    if (!window.isAudioEnabled) return;
+    if (!audioCtx || !soundBuffers[name]) return;
+
+    // 만약 Context가 suspended라면 재개 시도
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+
+    const source = audioCtx.createBufferSource();
+    source.buffer = soundBuffers[name];
+    source.connect(audioCtx.destination);
+    source.start(0);
+}

@@ -14,12 +14,12 @@ var global = typeof globalThis !== 'undefined' ? globalThis : typeof global !== 
     host: ''
   };
   global.__appsInToss = {
-    deploymentId: "019b2170-682e-755a-bcf2-f86e10ebf756",
+    deploymentId: "019b4ad8-ddda-7c27-baf7-dfc8811161a5",
     brandBridgeColorMode: "basic",
     brandDisplayName: "\uB0E5\uD2F0\uBE44",
     brandPrimaryColor: "#3d8bffff",
     brandIcon: "https://static.toss.im/appsintoss/10277/39de51d9-a6b3-4962-b8df-101a60153bad.png",
-    webViewType: "partner",
+    webViewType: "game",
     navigationBar: "{\"withBackButton\":true,\"withHomeButton\":false}"
   };
 })(typeof globalThis !== 'undefined' ? globalThis : typeof global !== 'undefined' ? global : typeof window !== 'undefined' ? window : this);
@@ -138,12 +138,12 @@ if (global.__MICRO_FRONTEND__ == null) {
     host: ''
   };
   global.__appsInToss = {
-    deploymentId: "019b2170-682e-755a-bcf2-f86e10ebf756",
+    deploymentId: "019b4ad8-ddda-7c27-baf7-dfc8811161a5",
     brandBridgeColorMode: "basic",
     brandDisplayName: "\uB0E5\uD2F0\uBE44",
     brandPrimaryColor: "#3d8bffff",
     brandIcon: "https://static.toss.im/appsintoss/10277/39de51d9-a6b3-4962-b8df-101a60153bad.png",
-    webViewType: "partner",
+    webViewType: "game",
     navigationBar: "{\"withBackButton\":true,\"withHomeButton\":false}"
   };
 })(typeof globalThis !== 'undefined' ? globalThis : typeof global !== 'undefined' ? global : typeof window !== 'undefined' ? window : this);
@@ -44012,7 +44012,7 @@ if (global.__MICRO_FRONTEND__ == null) {
         style: {
           flex: 1
         },
-        type: "partner",
+        type: "game",
         local: {
           port: "NOOP",
           host: "NOOP"

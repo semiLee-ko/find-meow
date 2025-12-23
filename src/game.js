@@ -1,6 +1,6 @@
 // 게임 로직 모듈
 import { config } from './config.js';
-import { playSound } from './audio.js';
+import { playSound, loadSoundEffect, playSoundEffect } from './audio.js';
 import { prepareInterstitialAd, showInterstitialAd } from './bedrock.js';
 
 // ==================== 게임 데이터 ====================
@@ -34,6 +34,7 @@ export async function initializeGame() {
 
     console.log('🎮 게임 시스템 초기화...');
     isGameInitialized = true;
+    await loadSoundEffect('cat', 'audio/small_cat_sound.mp3'); // Preload High Perf Audio
 
     try {
         const response = await fetch('point/json/pointInfo.json');
@@ -48,6 +49,7 @@ export async function initializeGame() {
     setupCustomDropdown();
     prepareInterstitialAd(); // 광고 미리 로드
     setupAccessibility(); // 접근성 설정
+    setupRemoteDrag(); // 리모컨 드래그 기능
     setTimeout(startContinuousWalking, 2000);
 
     // 전역 함수로 내보내기 (HTML에서 호출용)
@@ -337,7 +339,7 @@ function displayCatScanAnimation(imageName) {
     const cats = catPositions[imageName].cats || [];
     const tvScreen = document.getElementById('tvScreen');
     const scanSound = document.getElementById('scanSound');
-    const catSoundPool = Array.from(document.querySelectorAll('.catSound'));
+    // const catSoundPool = Array.from(document.querySelectorAll('.catSound')); // Remove
 
     updateCatCounter(0);
 
@@ -393,11 +395,8 @@ function displayCatScanAnimation(imageName) {
                 pulse.remove();
             }, 1500);
 
-            // 사운드 재생
-            const currentSound = catSoundPool[currentCatSoundIndex % catSoundPool.length];
-            currentSound.currentTime = 0;
-            playSound(currentSound);
-            currentCatSoundIndex++;
+            // Web Audio 재생 (고성능, 중첩 가능)
+            playSoundEffect('cat');
 
             catDetectedCount++;
             updateCatCounter(catDetectedCount);
@@ -920,5 +919,45 @@ function setupAccessibility() {
     if (dropdownBtn) {
         dropdownBtn.setAttribute('aria-haspopup', 'listbox');
     }
+}
+
+// ==================== 리모컨 드래그 (최소화/확장) ====================
+function setupRemoteDrag() {
+    const handle = document.getElementById('remoteDragHandle');
+    const remote = document.getElementById('remoteControl');
+
+    if (!handle || !remote) return;
+
+    let startY = 0;
+    let currentY = 0;
+    let isDragging = false;
+
+    handle.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+        isDragging = true;
+    }, { passive: true });
+
+    handle.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        currentY = e.touches[0].clientY;
+    }, { passive: true });
+
+    handle.addEventListener('touchend', () => {
+        if (!isDragging) return;
+        isDragging = false;
+
+        const deltaY = currentY - startY;
+        const threshold = 50;
+
+        if (deltaY > threshold) {
+            remote.classList.add('minimized');
+        } else if (deltaY < -threshold) {
+            remote.classList.remove('minimized');
+        }
+    });
+
+    handle.addEventListener('click', () => {
+        remote.classList.toggle('minimized');
+    });
 }
 

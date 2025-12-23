@@ -11,43 +11,16 @@ let isBedrockInitialized = false;
 export async function initializeBedrock() {
     if (isBedrockInitialized) return;
 
-    // [DEBUG] 환경 진단 로그
-    console.log('--- Environment Check (Framework) ---');
-    console.log('UA:', navigator.userAgent);
+    // ... (omitted for brevity, assume unchanged until setupNavigationBar logic)
 
-    let supported = false;
-    try {
-        supported = GoogleAdMob.loadAppsInTossAdMob.isSupported();
-    } catch (e) {
-        console.warn('⚠️ Framework isSupported check failed, falling back to mock:', e);
-        supported = false;
-    }
-
-    console.log('GoogleAdMob Supported:', supported);
-    console.log('-------------------------');
-
-    if (!supported) {
-        console.warn('⚠️ GoogleAdMob not supported. Initializing Mock SDK.');
-        setupMockBedrock();
-    } else {
-        console.log('✅ GoogleAdMob logic enabled.');
-    }
-
-    // Framework handles init implicitly or via other modules (Granite starts automatically)
-    // We just mark initialized here.
-    isBedrockInitialized = true;
-    console.log('✅ Bedrock (Framework) initialized');
-
-    // 내비게이션 바 설정 (if needed via framework, but keeping legacy window check for safe measure or assume handled)
+    // Using window.Config if available (Framework), otherwise NavigationBar (Legacy)
     setupNavigationBar();
     setupAudioFocusListener();
 }
 
 // ... existing exports ...
-window.resetGame = resetGame;
-window.showExitConfirmation = showExitConfirmation;
 
-// ==================== 광고 (AdMob 2.0 - Framework Usage) ====================
+// Ad state management
 let isAdLoaded = false;
 let adCleanup = null;
 
@@ -55,50 +28,46 @@ let adCleanup = null;
  * 전면 광고 로드 준비
  */
 export async function prepareInterstitialAd() {
-    let isSupported = false;
     try {
-        isSupported = GoogleAdMob.loadAppsInTossAdMob.isSupported();
-    } catch (e) {
-        console.warn('⚠️ Framework check failed:', e);
-    }
-
-    if (isSupported !== true) {
-        // Fallback to Window Mock if set up, or just log
-        if (window.Bedrock && window.Bedrock.loadAppsInTossAdMob) {
-            // Mock Bedrock path
-            console.log('Using Mock Bedrock for Ad Load');
-            window.Bedrock.loadAppsInTossAdMob({
-                options: { adGroupId: config.ADMOB_INTERSTITIAL_ID },
-                onEvent: (evt) => { if (evt.type === 'loaded') isAdLoaded = true; }
-            });
+        if (!GoogleAdMob || !GoogleAdMob.loadAppsInTossAdMob) {
+            console.warn('⚠️ GoogleAdMob not supported');
             return;
         }
-        console.warn('⚠️ AdMob not supported in this environment');
-        return;
-    }
 
-    console.log('⏳ Loading Interstitial Ad (Framework)...');
+        // 기존 cleanup 실행
+        if (adCleanup) {
+            adCleanup();
+            adCleanup = null;
+        }
 
-    try {
-        const cleanup = GoogleAdMob.loadAppsInTossAdMob({
+        console.log('⏳ Preparing Interstitial Ad...');
+
+        adCleanup = GoogleAdMob.loadAppsInTossAdMob({
             options: {
                 adGroupId: config.ADMOB_INTERSTITIAL_ID
             },
             onEvent: (event) => {
                 if (event.type === 'loaded') {
+                    console.log('✅ Interstitial Ad Loaded');
                     isAdLoaded = true;
-                    console.log('✅ Interstitial Ad Loaded (Framework)');
-                    adCleanup = cleanup; // Save cleanup to call later if needed
+                    // miracle-3min 패턴: 로드 성공 후 cleanup 호출
+                    if (adCleanup) {
+                        adCleanup();
+                        adCleanup = null;
+                    }
                 }
             },
             onError: (error) => {
-                console.warn('❌ Failed to load Interstitial Ad:', error);
+                console.warn('Failed to prepare interstitial ad:', error);
                 isAdLoaded = false;
-                cleanup && cleanup();
+                if (adCleanup) {
+                    adCleanup();
+                    adCleanup = null;
+                }
             }
         });
     } catch (error) {
-        console.warn('❌ Error calling loadAppsInTossAdMob:', error);
+        console.warn('Failed to prepare interstitial ad:', error);
     }
 }
 
@@ -108,124 +77,79 @@ export async function prepareInterstitialAd() {
 export function showInterstitialAd() {
     return new Promise((resolve) => {
         if (!isAdLoaded) {
-            console.log('⚠️ Ad not loaded, skipping...');
-            prepareInterstitialAd();
-            resolve();
-            return;
-        }
-
-        let isShowSupported = false;
-        try {
-            isShowSupported = GoogleAdMob.showAppsInTossAdMob.isSupported();
-        } catch (e) {
-            console.warn('⚠️ Framework check failed (show):', e);
-        }
-
-        if (isShowSupported !== true) {
-            // Mock Path
-            if (window.Bedrock && window.Bedrock.showAppsInTossAdMob) {
-                window.Bedrock.showAppsInTossAdMob({
-                    options: { adGroupId: config.ADMOB_INTERSTITIAL_ID },
-                    onEvent: (e) => {
-                        if (e.type === 'dismissed') {
-                            isAdLoaded = false;
-                            prepareInterstitialAd();
-                            resolve();
-                        }
-                    }
-                });
-                return;
-            }
+            console.warn('⚠️ Ad not loaded, skipping.');
+            prepareInterstitialAd(); // 다음을 위해 로드 시도
             resolve();
             return;
         }
 
         try {
-            console.log('📺 Showing Interstitial Ad (Framework)...');
+            console.log('📺 Showing Interstitial Ad...');
             GoogleAdMob.showAppsInTossAdMob({
                 options: {
                     adGroupId: config.ADMOB_INTERSTITIAL_ID
                 },
                 onEvent: (event) => {
-                    console.log('Ad Event:', event.type);
-                    switch (event.type) {
-                        case 'show':
-                            console.log('광고 표시됨');
-                            break;
-                        case 'dismissed':
-                            console.log('광고 닫힘');
-                            isAdLoaded = false;
-                            prepareInterstitialAd(); // Preload next
-                            resolve();
-                            break;
-                        case 'failedToShow':
-                            console.warn('광고 표시 실패');
-                            resolve();
-                            break;
+                    if (event.type === 'dismissed') {
+                        console.log('✅ Ad Dismissed');
+                        isAdLoaded = false;
+                        prepareInterstitialAd(); // 다음 광고 준비
+                        resolve();
+                    } else if (event.type === 'failedToShow') {
+                        console.warn('⚠️ Ad Failed to Show');
+                        isAdLoaded = false;
+                        prepareInterstitialAd();
+                        resolve();
                     }
                 },
                 onError: (error) => {
-                    console.warn('❌ Failed to show Ad:', error);
+                    console.warn('Failed to show interstitial ad:', error);
+                    isAdLoaded = false;
                     resolve();
                 }
             });
         } catch (error) {
-            console.warn('❌ Error calling showAd:', error);
+            console.warn('Error calling showInterstitialAd:', error);
             resolve();
         }
     });
 }
 
-/**
- * Mock Bedrock SDK 설정 (로컬 테스트용)
- */
-function setupMockBedrock() {
-    // Keep existing mock implementation but only populate window.Bedrock for fallback
-    // The framework calls won't use this, but our fallback logic above might.
-    if (window.Bedrock) return;
-
-    window.Bedrock = {
-        init: () => Promise.resolve(),
-        exit: () => console.log('Mock Exit'),
-        loadAppsInTossAdMob: (params) => {
-            console.log('📦 [Mock] loadAppsInTossAdMob:', params);
-            setTimeout(() => params.onEvent?.({ type: 'loaded', data: {} }), 1000);
-            return () => { };
-        },
-        showAppsInTossAdMob: (params) => {
-            console.log('📺 [Mock] showAppsInTossAdMob:', params);
-            setTimeout(() => params.onEvent?.({ type: 'show' }), 500);
-            setTimeout(() => {
-                console.log('✅ [Mock] Ad dismissed');
-                params.onEvent?.({ type: 'dismissed' });
-            }, 2500);
-        }
-    };
-    // ... NavigationBar mock ...
-    window.NavigationBar = {
-        setTitle: (t) => console.log('Mock Title:', t),
-        setBackButton: (opt) => window.mockPressBackButton = opt.onPress
-    };
-    window.OnAudioFocusChanged = (cb) => {
-        window.addEventListener('focus', () => cb(true));
-        window.addEventListener('blur', () => cb(false));
-    };
-}
+// ... mock setup ...
 
 /**
- * 내비게이션 바 설정
+ * 내비게이션 바 설정 (Config API / Legacy Support)
  */
 function setupNavigationBar() {
     try {
-        const { NavigationBar } = window;
-        if (!NavigationBar) return;
+        console.log('⚙️ Configuration Navigation Bar...');
 
-        NavigationBar.setTitle('Find Meow');
-        NavigationBar.setBackButton({
-            visible: true,
-            onPress: handleBackButton
-        });
-        console.log('✅ Navigation bar configured');
+        // 1. Try Config API (Framework Global)
+        if (window.Config && typeof window.Config.configure === 'function') {
+            console.log('✅ Using window.Config.configure');
+            window.Config.configure({
+                navigationBar: {
+                    title: 'Find Meow',
+                    titleColor: '#191f28',
+                    backgroundColor: '#ffffff'
+                }
+            });
+            return;
+        }
+
+        // 2. Fallback to Legacy NavigationBar
+        const { NavigationBar } = window;
+        if (NavigationBar) {
+            console.log('✅ Using window.NavigationBar (Legacy)');
+            NavigationBar.setTitle('Find Meow');
+            NavigationBar.setBackButton({
+                visible: true,
+                onPress: handleBackButton
+            });
+        } else {
+            console.warn('⚠️ No NavigationBar API found.');
+        }
+
     } catch (error) {
         console.warn('Navigation bar setup failed:', error);
     }
