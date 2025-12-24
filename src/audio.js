@@ -33,6 +33,7 @@ export function toggleAllAudio() {
     const audioOnIcon = document.getElementById('audioOnIcon');
     const audioOffIcon = document.getElementById('audioOffIcon');
     const audioToggleButton = document.getElementById('audioToggleButton');
+    const bgMusic = document.getElementById('bgMusic');
 
     if (window.isAudioEnabled) {
         // 사운드 켜기
@@ -40,6 +41,12 @@ export function toggleAllAudio() {
         audioOffIcon.style.display = 'none';
         audioToggleButton.classList.remove('disabled');
         audioToggleButton.setAttribute('aria-checked', 'true'); // A11y
+
+        // iOS 대응: 전체 사운드 활성화 시점에 오디오 요소 워밍업
+        if (bgMusic && typeof bgMusic.load === 'function') {
+            bgMusic.load();
+        }
+
         console.log('🔊 All audio enabled');
     } else {
         // 사운드 끄기 - 모든 오디오 정지
@@ -49,15 +56,14 @@ export function toggleAllAudio() {
         audioToggleButton.setAttribute('aria-checked', 'false'); // A11y
 
         // 배경음악이 재생 중이면 정지
-        const bgMusic = document.getElementById('bgMusic');
         if (bgMusic && window.isMusicPlaying) {
             bgMusic.pause();
             const powerButton = document.getElementById('powerButton');
             const ledIndicator = document.getElementById('ledIndicator');
             const soundWaves = document.getElementById('soundWaves');
-            powerButton.classList.remove('active');
-            ledIndicator.classList.remove('active');
-            soundWaves.classList.remove('active');
+            if (powerButton) powerButton.classList.remove('active');
+            if (ledIndicator) ledIndicator.classList.remove('active');
+            if (soundWaves) soundWaves.classList.remove('active');
             window.isMusicPlaying = false;
         }
 
@@ -80,9 +86,9 @@ export function toggleMusic() {
     if (window.isMusicPlaying) {
         // 음악 끄기
         bgMusic.pause();
-        powerButton.classList.remove('active');
-        ledIndicator.classList.remove('active');
-        soundWaves.classList.remove('active');
+        if (powerButton) powerButton.classList.remove('active');
+        if (ledIndicator) ledIndicator.classList.remove('active');
+        if (soundWaves) soundWaves.classList.remove('active');
         window.isMusicPlaying = false;
     } else {
         // 전체 사운드가 꺼져있으면 재생하지 않고 알림 표시
@@ -96,16 +102,24 @@ export function toggleMusic() {
         }
 
         // 시각적 효과 먼저 활성화
-        powerButton.classList.add('active');
-        ledIndicator.classList.add('active');
-        soundWaves.classList.add('active');
+        if (powerButton) powerButton.classList.add('active');
+        if (ledIndicator) ledIndicator.classList.add('active');
+        if (soundWaves) soundWaves.classList.add('active');
         window.isMusicPlaying = true;
 
         // 음악 재생 시도
         if (bgMusicSrc && bgMusicSrc.src) {
             bgMusic.play()
                 .then(() => console.log('배경음 재생 시작'))
-                .catch(error => console.warn('음악 재생 실패:', error));
+                .catch(error => {
+                    console.warn('음악 재생 실패:', error);
+                    // iOS 대응: 재생 실패 시 상태값과 UI를 원래대로 복구하여 
+                    // 다음 클릭이 정상적으로 '재생'으로 작동하게 함
+                    window.isMusicPlaying = false;
+                    if (powerButton) powerButton.classList.remove('active');
+                    if (ledIndicator) ledIndicator.classList.remove('active');
+                    if (soundWaves) soundWaves.classList.remove('active');
+                });
         }
     }
 }

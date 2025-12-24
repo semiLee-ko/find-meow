@@ -85,6 +85,10 @@ export function showInterstitialAd() {
 
         try {
             console.log('📺 Showing Interstitial Ad...');
+
+            // 광고 표시 전 모든 오디오 일시정지
+            pauseAllAudio();
+
             GoogleAdMob.showAppsInTossAdMob({
                 options: {
                     adGroupId: config.ADMOB_INTERSTITIAL_ID
@@ -94,22 +98,34 @@ export function showInterstitialAd() {
                         console.log('✅ Ad Dismissed');
                         isAdLoaded = false;
                         prepareInterstitialAd(); // 다음 광고 준비
+
+                        // 광고 종료 후 오디오 재개
+                        resumeAudioIfEnabled();
                         resolve();
                     } else if (event.type === 'failedToShow') {
                         console.warn('⚠️ Ad Failed to Show');
                         isAdLoaded = false;
                         prepareInterstitialAd();
+
+                        // 광고 표시 실패 시에도 오디오 재개
+                        resumeAudioIfEnabled();
                         resolve();
                     }
                 },
                 onError: (error) => {
                     console.warn('Failed to show interstitial ad:', error);
                     isAdLoaded = false;
+
+                    // 에러 발생 시에도 오디오 재개
+                    resumeAudioIfEnabled();
                     resolve();
                 }
             });
         } catch (error) {
             console.warn('Error calling showInterstitialAd:', error);
+
+            // 예외 발생 시에도 오디오 재개
+            resumeAudioIfEnabled();
             resolve();
         }
     });

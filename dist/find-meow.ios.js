@@ -14,7 +14,7 @@ var global = typeof globalThis !== 'undefined' ? globalThis : typeof global !== 
     host: ''
   };
   global.__appsInToss = {
-    deploymentId: "019b4ad8-ddda-7c27-baf7-dfc8811161a5",
+    deploymentId: "019b5032-abac-7143-9acb-4fae87d3df3e",
     brandBridgeColorMode: "basic",
     brandDisplayName: "\uB0E5\uD2F0\uBE44",
     brandPrimaryColor: "#3d8bffff",
@@ -138,7 +138,7 @@ if (global.__MICRO_FRONTEND__ == null) {
     host: ''
   };
   global.__appsInToss = {
-    deploymentId: "019b4ad8-ddda-7c27-baf7-dfc8811161a5",
+    deploymentId: "019b5032-abac-7143-9acb-4fae87d3df3e",
     brandBridgeColorMode: "basic",
     brandDisplayName: "\uB0E5\uD2F0\uBE44",
     brandPrimaryColor: "#3d8bffff",
