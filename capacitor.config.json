@@ -1,6 +1,6 @@
 {
   "appId": "com.codacreative.findmeow",
   "appName": "Find Meow",
-  "webDir": "dist",
+  "webDir": "dist/web",
   "bundledWebRuntime": false
 }
